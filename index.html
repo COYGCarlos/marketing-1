@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Marketing y Servucción</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fuente Inter para estética moderna */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        .container-quiz {
+            max-width: 800px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="container-quiz bg-white shadow-xl rounded-2xl p-6 md:p-10 border border-gray-100">
+
+    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6 border-b pb-3">
+        Marketing Turístico: Test
+    </h1>
+
+    <!-- Selector de Modo y Botón de Inicio/Reiniciar -->
+    <div id="mode-selection" class="space-y-4">
+        <p class="text-lg text-gray-700 font-semibold">Selecciona el modo de test:</p>
+
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <button onclick="setMode('study')" id="btn-study"
+                class="flex-1 px-6 py-3 rounded-xl text-white font-medium transition duration-200 shadow-md
+                       bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                Modo Estudiar (Feedback Inmediato)
+            </button>
+            <button onclick="setMode('practice')" id="btn-practice"
+                class="flex-1 px-6 py-3 rounded-xl text-white font-medium transition duration-200 shadow-md
+                       bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300">
+                Modo Practicar (Corrección al Final)
+            </button>
+        </div>
+
+        <button onclick="startTest()" id="start-button"
+            class="w-full px-8 py-4 rounded-xl text-xl font-bold text-white transition duration-200 shadow-lg
+                   bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-[1.01] disabled:bg-gray-400" disabled>
+            Comenzar Test
+        </button>
+    </div>
+
+    <!-- Contenedor del Test (oculto inicialmente) -->
+    <div id="quiz-container" class="hidden space-y-6">
+        <div class="text-center mb-6">
+            <p id="question-counter" class="text-xl font-semibold text-indigo-600"></p>
+        </div>
+
+        <!-- Pregunta -->
+        <div class="bg-indigo-50 p-6 rounded-xl shadow-inner border border-indigo-200">
+            <p id="question-text" class="text-xl font-semibold text-gray-800"></p>
+        </div>
+
+        <!-- Opciones -->
+        <div id="options-container" class="space-y-4">
+            <!-- Las opciones se inyectarán aquí por JavaScript -->
+        </div>
+
+        <!-- Botones de Navegación/Corrección -->
+        <div class="flex justify-between pt-4 border-t mt-6">
+            <button onclick="handleNext()" id="next-button" disabled
+                class="px-6 py-3 rounded-xl bg-gray-400 text-white font-semibold transition duration-200 shadow-md">
+                Siguiente Pregunta (Solo Modo Estudiar)
+            </button>
+            <button onclick="submitAnswer()" id="submit-button" disabled
+                class="px-8 py-3 rounded-xl bg-indigo-600 text-white font-semibold transition duration-200 shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 disabled:bg-gray-400">
+                Responder
+            </button>
+        </div>
+
+        <!-- Feedback de la Pregunta (Modo Estudiar) -->
+        <div id="feedback-container" class="hidden p-4 mt-4 rounded-xl border-l-4" role="alert">
+            <p id="feedback-text" class="font-bold mb-2"></p>
+            <p id="explanation-text" class="text-sm"></p>
+        </div>
+    </div>
+
+    <!-- Contenedor de Resultados (oculto inicialmente) -->
+    <div id="results-container" class="hidden text-center p-8 bg-blue-50 rounded-xl shadow-inner border border-blue-200 space-y-6">
+        <h2 class="text-3xl font-extrabold text-blue-700">¡Test Finalizado!</h2>
+        <p class="text-2xl font-bold text-gray-700">Modo: <span id="final-mode" class="text-indigo-600"></span></p>
+
+        <div class="flex flex-col items-center space-y-2">
+            <p class="text-xl font-semibold text-gray-800">Respuestas Correctas: <span id="correct-count" class="text-green-600 font-extrabold"></span></p>
+            <p class="text-xl font-semibold text-gray-800">Respuestas Incorrectas: <span id="incorrect-count" class="text-red-600 font-extrabold"></span></p>
+            <p class="text-xl font-semibold text-gray-800">Penalización Total: <span id="penalty-score" class="text-red-600 font-extrabold"></span> puntos</p>
+        </div>
+
+        <p class="text-5xl font-extrabold pt-4 border-t border-blue-300 text-gray-900">
+            Nota Final (sobre 10): <span id="final-score" class="text-red-500"></span>
+        </p>
+
+        <button onclick="resetTest()"
+            class="px-8 py-3 rounded-xl text-xl font-bold text-white transition duration-200 shadow-lg
+                   bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-[1.01]">
+            Volver a Empezar
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // Configuración y Datos del Test (10 Preguntas)
+    const MAX_QUESTIONS = 10;
+    let quizData = [
+        {
+            question: "¿Cuál de las siguientes es una característica esencial del Marketing de Servicios, según los materiales?",
+            options: [
+                "a) Exclusividad",
+                "b) Intangibilidad",
+                "c) Homogeneidad",
+                "d) Almacenamiento"
+            ],
+            correctAnswerIndex: 1,
+            explanation: "La Intangibilidad es una característica clave del marketing de servicios, ya que los servicios no se pueden tocar, ver, oler ni probar antes de la compra, a diferencia de los productos físicos. Las otras características clave son Inseparabilidad, Heterogeneidad/Variabilidad y Caducidad.",
+            topic: "T1 - Características del Marketing de Servicios"
+        },
+        {
+            question: "¿Qué es la Servucción, según la definición proporcionada en los contenidos?",
+            options: [
+                "a) La estrategia de fijación de precios en el sector hotelero.",
+                "b) La organización sistemática de elementos físicos y humanos para la prestación de servicios.",
+                "c) El proceso de conversión de servicios en productos tangibles.",
+                "d) La gestión exclusiva del personal de contacto con el cliente."
+            ],
+            correctAnswerIndex: 1,
+            explanation: "Servucción es un neologismo de servicio + producción y se define como la organización sistemática y coherente de todos los elementos físicos y humanos de la relación cliente-empresa, necesaria para la realización de una prestación de servicios.",
+            topic: "T2 - Concepto de Servucción"
+        },
+        {
+            question: "¿Qué concepto se refiere al conjunto de individuos o grupos que adquieren y consumen productos y servicios para satisfacer sus necesidades?",
+            options: [
+                "a) Oferta",
+                "b) Mercado objetivo",
+                "c) Demanda",
+                "d) CRM"
+            ],
+            correctAnswerIndex: 2,
+            explanation: "La Demanda se considera el conjunto de individuos o grupos que adquieren y consumen productos y servicios. El Mercado Objetivo es el grupo al que se quiere dirigir el producto. La Oferta es el conjunto de organizaciones que crean y producen.",
+            topic: "T1 - Terminología básica"
+        },
+        {
+            question: "Según las estrategias ante la 'Caducidad' de los servicios (no se pueden almacenar), ¿cuál de las siguientes opciones se recomienda?",
+            options: [
+                "a) Crear una fuerte imagen de marca corporativa.",
+                "b) Fijar el precio en función del valor percibido.",
+                "c) Estandarizar los servicios.",
+                "d) Desestacionalizar."
+            ],
+            correctAnswerIndex: 3,
+            explanation: "Ante la Caducidad (oportunidades perdidas por inventario no vendido, como una habitación vacía), la estrategia clave es Desestacionalizar la demanda para intentar hacerla más uniforme a lo largo del tiempo.",
+            topic: "T1 - Estrategias de Marketing de Servicios"
+        },
+        {
+            question: "¿Cuál de los siguientes no es un componente fundamental del sistema de Servucción?",
+            options: [
+                "a) El Cliente",
+                "b) El Soporte Físico",
+                "c) El Personal de Competencia",
+                "d) La Organización Interna"
+            ],
+            correctAnswerIndex: 2,
+            explanation: "Los componentes fundamentales son: Cliente, Soporte Físico, Personal de Contacto, Sistema de Organización Interna, Empresa y el propio Servicio. El 'Personal de Competencia' no es un componente del sistema de Servucción.",
+            topic: "T2 - Componentes de la Servucción"
+        },
+        {
+            question: "Una de las funciones del Personal de Contacto es la Función Relacional. ¿A qué aspecto principal está asociada esta función?",
+            options: [
+                "a) ¿Qué? (Los procesos y acciones operacionales)",
+                "b) ¿Cuánto? (La gestión económica de las transacciones)",
+                "c) ¿Cómo? (Lo visible, gestual, verbal de la interacción)",
+                "d) ¿Cuándo? (La gestión del tiempo de espera del cliente)"
+            ],
+            correctAnswerIndex: 2,
+            explanation: "El personal de contacto tiene dos funciones principales: la Operacional (el ¿Qué?) y la Relacional (el ¿Cómo?), que se enfoca en la interacción (lo visible, gestual, verbal) y la definición de un estilo de empresa y de servicio.",
+            topic: "T2 - Funciones del Personal de Contacto"
+        },
+        {
+            question: "La 'Heterogeneidad o Variabilidad' de los servicios en turismo implica que la experiencia del cliente puede diferir según:",
+            options: [
+                "a) El precio fijado.",
+                "b) Quién la ofrece, cuándo y dónde.",
+                "c) Si el servicio es tangible o intangible.",
+                "d) La estrategia de venta cruzada aplicada."
+            ],
+            correctAnswerIndex: 1,
+            explanation: "La Heterogeneidad o Variabilidad significa que la prestación de servicio puede diferir (cambiar) según el empleado que lo ofrece, el momento y el lugar, ya que la calidad depende de factores humanos y externos.",
+            topic: "T1 - Características del Marketing de Servicios"
+        },
+        {
+            question: "El CRM (Customer Relationship Management) es una base de datos con gran capacidad para administrar y registrar datos con el objetivo de:",
+            options: [
+                "a) Evaluar exclusivamente la calidad del soporte físico.",
+                "b) Generar informes contables para la empresa.",
+                "c) Gestionar las relaciones con los clientes.",
+                "d) Definir la estrategia de desestacionalización."
+            ],
+            correctAnswerIndex: 2,
+            explanation: "CRM son las siglas de Customer Relationship Management, cuya traducción es gestión de las relaciones con los clientes, siendo una herramienta clave para la administración de datos y la gestión de la cartera de clientes.",
+            topic: "T1 - Terminología básica"
+        },
+        {
+            question: "Según los materiales de Servucción, la 'Calidad' se define como:",
+            options: [
+                "a) El cumplimiento estricto de los procedimientos internos de la empresa.",
+                "b) La minimización de la Caducidad del servicio.",
+                "c) Satisfacción de las necesidades y expectativas del cliente.",
+                "d) El nivel de formación del personal de contacto."
+            ],
+            correctAnswerIndex: 2,
+            explanation: "En el Glosario de la Unidad 2, 'Calidad' se define de forma concisa como la 'Satisfacción de las necesidades y expectativas del cliente'.",
+            topic: "T2 - Glosario"
+        },
+        {
+            question: "¿Cuál es el objetivo principal del Personal de Contacto que se relaciona con 'Defender los intereses económicos'?",
+            options: [
+                "a) Servir al cliente.",
+                "b) Personalizar y singularizar el servicio.",
+                "c) Defender los intereses de la empresa.",
+                "d) Aplicar el concepto global de ergonomía."
+            ],
+            correctAnswerIndex: 2,
+            explanation: "Uno de los objetivos del personal de contacto es Defender los intereses de la empresa, lo cual se logra a través de dos vías: Defender los intereses económicos y Respetar y hacer respetar las reglas de la empresa.",
+            topic: "T2 - Objetivos del Personal de Contacto"
+        }
+    ];
+
+    // Variables de Estado Global
+    let currentMode = null; // 'study' o 'practice'
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(MAX_QUESTIONS).fill(null);
+    let quizStarted = false;
+
+    // --- Funciones de Utilidad y Lógica Central ---
+
+    /**
+     * Establece el modo de test y activa el botón de inicio.
+     * @param {string} mode - 'study' o 'practice'.
+     */
+    function setMode(mode) {
+        currentMode = mode;
+        const studyBtn = document.getElementById('btn-study');
+        const practiceBtn = document.getElementById('btn-practice');
+        const startBtn = document.getElementById('start-button');
+
+        // Resetear estilos de los botones
+        studyBtn.classList.remove('ring-4', 'ring-blue-500');
+        practiceBtn.classList.remove('ring-4', 'ring-green-500');
+
+        // Marcar el botón seleccionado
+        if (mode === 'study') {
+            studyBtn.classList.add('ring-4', 'ring-blue-500');
+        } else {
+            practiceBtn.classList.add('ring-4', 'ring-green-500');
+        }
+
+        startBtn.disabled = false;
+        startBtn.textContent = 'Comenzar Test';
+    }
+
+    /**
+     * Inicia el test, oculta la selección de modo y muestra el quiz.
+     */
+    function startTest() {
+        if (!currentMode) return;
+
+        quizStarted = true;
+        currentQuestionIndex = 0;
+        userAnswers = new Array(MAX_QUESTIONS).fill(null);
+
+        document.getElementById('mode-selection').classList.add('hidden');
+        document.getElementById('results-container').classList.add('hidden');
+        document.getElementById('quiz-container').classList.remove('hidden');
+
+        // Configurar botones según el modo
+        const nextBtn = document.getElementById('next-button');
+        const submitBtn = document.getElementById('submit-button');
+        const feedbackContainer = document.getElementById('feedback-container');
+
+        if (currentMode === 'study') {
+            nextBtn.classList.remove('hidden');
+            nextBtn.classList.remove('bg-gray-400');
+            nextBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            submitBtn.textContent = 'Comprobar Respuesta';
+        } else { // practice
+            nextBtn.classList.add('hidden');
+            submitBtn.textContent = 'Responder';
+            feedbackContainer.classList.add('hidden');
+        }
+
+        renderQuestion();
+    }
+
+    /**
+     * Muestra la pregunta actual y sus opciones.
+     */
+    function renderQuestion() {
+        if (currentQuestionIndex >= MAX_QUESTIONS) {
+            return finishTest();
+        }
+
+        const questionData = quizData[currentQuestionIndex];
+        const optionsContainer = document.getElementById('options-container');
+        const submitBtn = document.getElementById('submit-button');
+        const nextBtn = document.getElementById('next-button');
+        const feedbackContainer = document.getElementById('feedback-container');
+
+        // Resetear UI
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('hidden');
+        feedbackContainer.classList.add('hidden');
+        optionsContainer.innerHTML = '';
+
+        // Actualizar contadores
+        document.getElementById('question-counter').textContent = `Pregunta ${currentQuestionIndex + 1} de ${MAX_QUESTIONS} - Modo: ${currentMode === 'study' ? 'Estudiar' : 'Practicar'}`;
+        document.getElementById('question-text').textContent = questionData.question;
+
+        // Renderizar opciones
+        questionData.options.forEach((option, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option p-4 bg-gray-50 rounded-lg border border-gray-200 transition duration-150 hover:bg-gray-100 cursor-pointer text-gray-800';
+            optionDiv.innerHTML = `<input type="radio" id="option-${index}" name="quiz-option" value="${index}" class="hidden">
+                                   <label for="option-${index}" class="block font-medium cursor-pointer">${option}</label>`;
+
+            // Manejador de clic para opciones
+            optionDiv.addEventListener('click', () => {
+                // Deseleccionar visualmente todos
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('bg-indigo-200', 'border-indigo-500');
+                    opt.querySelector('input').checked = false;
+                });
+                // Seleccionar visualmente el actual
+                optionDiv.classList.add('bg-indigo-200', 'border-indigo-500');
+                optionDiv.querySelector('input').checked = true;
+                userAnswers[currentQuestionIndex] = index;
+                submitBtn.disabled = false; // Habilitar botón de respuesta
+            });
+            optionsContainer.appendChild(optionDiv);
+        });
+
+        // Deshabilitar navegación en modo Estudiar hasta responder
+        if (currentMode === 'study') {
+            nextBtn.disabled = true;
+        }
+    }
+
+    /**
+     * Procesa la respuesta del usuario.
+     */
+    function submitAnswer() {
+        const selectedAnswer = userAnswers[currentQuestionIndex];
+        if (selectedAnswer === null) {
+            // Esto no debería pasar si el botón está deshabilitado correctamente, pero es un buen fallback
+            console.error("No se ha seleccionado ninguna respuesta.");
+            return;
+        }
+
+        // Deshabilitar todas las opciones para evitar cambios
+        document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
+        document.getElementById('submit-button').disabled = true;
+
+        if (currentMode === 'study') {
+            checkAndDisplayFeedback(selectedAnswer);
+        } else { // practice mode
+            // Solo avanzar a la siguiente pregunta en modo practicar
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    /**
+     * Muestra la corrección y explicación. Solo para Modo Estudiar.
+     * @param {number} selectedAnswer - Índice de la respuesta seleccionada por el usuario.
+     */
+    function checkAndDisplayFeedback(selectedAnswer) {
+        const questionData = quizData[currentQuestionIndex];
+        const correctIndex = questionData.correctAnswerIndex;
+        const isCorrect = selectedAnswer === correctIndex;
+
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackText = document.getElementById('feedback-text');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-button');
+
+        // Limpiar estilos anteriores
+        feedbackContainer.className = 'p-4 mt-4 rounded-xl border-l-4';
+
+        if (isCorrect) {
+            feedbackContainer.classList.add('bg-green-100', 'border-green-500');
+            feedbackText.textContent = '¡Respuesta Correcta!';
+            explanationText.textContent = questionData.explanation;
+        } else {
+            // Marcar visualmente la respuesta del usuario (incorrecta) y la correcta
+            document.querySelectorAll('.option').forEach((opt, index) => {
+                if (index === selectedAnswer) {
+                    opt.classList.add('bg-red-200', 'border-red-500');
+                }
+                if (index === correctIndex) {
+                    opt.classList.add('bg-green-200', 'border-green-500', 'shadow-lg');
+                }
+            });
+
+            feedbackContainer.classList.add('bg-red-100', 'border-red-500');
+            feedbackText.textContent = `¡Respuesta Incorrecta! La respuesta correcta era: ${questionData.options[correctIndex]}.`;
+            explanationText.textContent = `Explicación: ${questionData.explanation}`;
+        }
+
+        feedbackContainer.classList.remove('hidden');
+        nextBtn.disabled = false;
+        document.getElementById('submit-button').classList.add('hidden'); // Ocultar el botón de responder una vez corregido
+    }
+
+    /**
+     * Avanza a la siguiente pregunta. Solo en Modo Estudiar.
+     */
+    function handleNext() {
+        currentQuestionIndex++;
+        renderQuestion();
+    }
+
+
+    /**
+     * Calcula y muestra la nota final del test.
+     */
+    function calculateAndDisplayResults() {
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        for (let i = 0; i < MAX_QUESTIONS; i++) {
+            const userAnswer = userAnswers[i];
+            const correctIndex = quizData[i].correctAnswerIndex;
+
+            if (userAnswer !== null) {
+                if (userAnswer === correctIndex) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+            }
+        }
+
+        // Puntuación: 1 punto por correcta, -1/3 de punto por incorrecta. Máximo 10.
+        const penalty = incorrectCount / 3;
+        let finalScore = correctCount - penalty;
+
+        // La nota final no puede ser menor a 0.
+        finalScore = Math.max(0, finalScore);
+        // Redondear a dos decimales
+        finalScore = finalScore.toFixed(2);
+
+        // Mostrar resultados
+        document.getElementById('quiz-container').classList.add('hidden');
+        document.getElementById('results-container').classList.remove('hidden');
+
+        document.getElementById('final-mode').textContent = currentMode === 'study' ? 'Estudiar' : 'Practicar';
+        document.getElementById('correct-count').textContent = correctCount;
+        document.getElementById('incorrect-count').textContent = incorrectCount;
+        document.getElementById('penalty-score').textContent = penalty.toFixed(2);
+        document.getElementById('final-score').textContent = finalScore;
+
+        // Ajuste visual de la nota
+        const scoreElement = document.getElementById('final-score');
+        scoreElement.classList.remove('text-red-500', 'text-orange-500', 'text-green-500');
+        if (parseFloat(finalScore) < 5) {
+            scoreElement.classList.add('text-red-500');
+        } else if (parseFloat(finalScore) < 7.5) {
+            scoreElement.classList.add('text-orange-500');
+        } else {
+            scoreElement.classList.add('text-green-500');
+        }
+    }
+
+    /**
+     * Finaliza el test y muestra los resultados.
+     */
+    function finishTest() {
+        if (currentMode === 'practice') {
+            // En modo Practicar, solo se corrige al final, por lo que llamamos directamente a calcular y mostrar
+            calculateAndDisplayResults();
+        } else {
+            // En modo Estudiar, ya se corrigió pregunta por pregunta, solo mostramos el resumen
+            calculateAndDisplayResults();
+        }
+    }
+
+    /**
+     * Reinicia la aplicación a la pantalla de selección de modo.
+     */
+    function resetTest() {
+        currentMode = null;
+        currentQuestionIndex = 0;
+        userAnswers = new Array(MAX_QUESTIONS).fill(null);
+        quizStarted = false;
+
+        document.getElementById('mode-selection').classList.remove('hidden');
+        document.getElementById('quiz-container').classList.add('hidden');
+        document.getElementById('results-container').classList.add('hidden');
+        document.getElementById('start-button').disabled = true;
+
+        // Limpiar estilos de los botones de modo
+        document.getElementById('btn-study').classList.remove('ring-4', 'ring-blue-500');
+        document.getElementById('btn-practice').classList.remove('ring-4', 'ring-green-500');
+    }
+
+    // Inicializar la aplicación al cargar la página.
+    window.onload = resetTest;
+
+</script>
+
+</body>
+</html>
