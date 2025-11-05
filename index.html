@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test de Marketing y Servucción</title>
-    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Fuente Inter para estética moderna */
@@ -30,12 +29,16 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .correct-answer {
-            background-color: #d1fae5; /* green-100 */
-            border-color: #10b981; /* green-500 */
+            background-color: #d1fae5;
+            /* green-100 */
+            border-color: #10b981;
+            /* green-500 */
         }
         .incorrect-answer {
-            background-color: #fee2e2; /* red-100 */
-            border-color: #ef4444; /* red-500 */
+            background-color: #fee2e2;
+            /* red-100 */
+            border-color: #ef4444;
+            /* red-500 */
         }
     </style>
 </head>
@@ -47,9 +50,9 @@
         Marketing Turístico: Test Extendido (100 Preguntas)
     </h1>
 
-    <!-- Modal de Información/Error (Reemplaza a alert()) -->
     <div id="modal-message" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
+          
             <h3 id="modal-title" class="text-xl font-semibold mb-3 text-indigo-600">Mensaje</h3>
             <p id="modal-body" class="text-gray-700 mb-5"></p>
             <button onclick="document.getElementById('modal-message').classList.add('hidden')"
@@ -57,22 +60,25 @@
                 Cerrar
             </button>
         </div>
+ 
     </div>
     
-    <!-- 1. Selección de Modo -->
     <div id="mode-selection" class="text-center">
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Selecciona el Modo de Estudio</h2>
-        <p class="text-gray-600 mb-8">Hay 100 preguntas disponibles. ¡A por ellas!</p>
+        <p class="text-gray-600 mb-8">Hay 100 preguntas disponibles.
+ ¡A por ellas!</p>
         
         <div class="flex flex-col md:flex-row justify-center gap-6">
             <button id="btn-study"
                     class="px-6 py-4 rounded-xl text-lg font-medium shadow-md transition duration-200 border-2 border-transparent bg-blue-500 text-white hover:bg-blue-600"
                     onclick="selectMode('study')">
+            
                 <span class="font-bold">Modo Estudiar</span> <br> (Corrección inmediata)
             </button>
             <button id="btn-practice"
                     class="px-6 py-4 rounded-xl text-lg font-medium shadow-md transition duration-200 border-2 border-transparent bg-green-500 text-white hover:bg-green-600"
                     onclick="selectMode('practice')">
+              
                 <span class="font-bold">Modo Práctica</span> <br> (Corrección al final)
             </button>
         </div>
@@ -80,16 +86,17 @@
         <button id="start-button" disabled
                 class="mt-8 px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 onclick="startQuiz()">
-            Comenzar Test
+          
+                Comenzar Test
         </button>
     </div>
 
-    <!-- 2. Contenedor del Cuestionario -->
     <div id="quiz-container" class="hidden">
         <div class="flex justify-between items-center mb-6 border-b pb-4">
             <p class="text-xl font-medium text-indigo-700">
                 Pregunta <span id="question-number">1</span> / <span id="max-questions">100</span>
             </p>
+        
             <p id="mode-display" class="text-sm font-semibold px-3 py-1 rounded-full text-white"></p>
         </div>
 
@@ -98,33 +105,35 @@
         </div>
 
         <div id="choices-container" class="space-y-4">
-            <!-- Los botones de opciones se insertarán aquí -->
-        </div>
+            </div>
 
+    
         <div id="feedback-message" class="mt-4 p-3 rounded-lg text-sm hidden"></div>
 
         <div class="mt-8 flex justify-between">
             <button id="prev-button" disabled
                     class="px-6 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400 transition duration-150 disabled:opacity-50"
                     onclick="prevQuestion()">
+                
                 Anterior
             </button>
             <button id="next-button" disabled
                     class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50"
                     onclick="nextQuestion()">
                 Siguiente
+        
             </button>
         </div>
     </div>
 
-    <!-- 3. Contenedor de Resultados -->
     <div id="results-container" class="hidden text-center">
         <h2 class="text-3xl font-bold text-green-700 mb-4">¡Test Finalizado!</h2>
         <p class="text-xl text-gray-700 mb-6">Tu puntuación es:</p>
         
         <div class="inline-block p-8 rounded-full shadow-xl bg-white border-4 border-indigo-500">
             <p id="final-score" class="text-6xl font-extrabold text-indigo-600">0%</p>
-        </div>
+   
+         </div>
 
         <p id="score-message" class="text-2xl mt-6 font-semibold"></p>
         
@@ -132,6 +141,7 @@
             <button class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200"
                     onclick="resetTest()">
                 Volver a Empezar
+      
             </button>
         </div>
     </div>
@@ -139,11 +149,13 @@
 </div>
 
 <script>
-    const MAX_QUESTIONS = 10; // ¡Cambiado a 100!
+    // Se ha modificado el valor para usar el total de preguntas disponibles (100)
+    const MAX_QUESTIONS = 100; // Usa el total de preguntas disponibles
     let currentMode = null;
     let currentQuestionIndex = 0;
     let userAnswers = new Array(MAX_QUESTIONS).fill(null);
     let quizStarted = false;
+    let shuffledQuestions = []; // Array para almacenar las preguntas aleatorias
 
     // --- Definición del Array de 100 Preguntas ---
     const questions = [
@@ -151,132 +163,190 @@
         // TEMA 1: INTRODUCCIÓN AL MARKETING (Conceptos y Servicios)
         // ----------------------------------------------------
         // Q1-Q5: Concepto y Evolución del Marketing
-        { text: "¿Qué concepto define el Marketing como la actividad humana que se orienta a la satisfacción de necesidades y deseos a través de procesos de intercambio?", choices: ["Orientación a la Producción", "Proceso de Intercambio", "Gestión de la Oferta", "Marketing Transaccional"], correct: 1 },
+        { text: "¿Qué concepto define el Marketing como la actividad humana que se orienta a la satisfacción de necesidades y deseos a través de procesos 
+ de intercambio?", choices: ["Orientación a la Producción", "Proceso de Intercambio", "Gestión de la Oferta", "Marketing Transaccional"], correct: 1 },
         { text: "Según el enfoque de Marketing, ¿en qué se centra la empresa principalmente?", choices: ["En el volumen de producción", "En la calidad del producto ofrecido", "En las necesidades y deseos del consumidor", "En la agresividad de la venta"], correct: 2 },
-        { text: "¿Cuál de las siguientes orientaciones de gestión empresarial precedió al enfoque de Marketing, centrándose en persuadir al cliente?", choices: ["Orientación a la Venta", "Orientación al Producto", "Marketing Relacional", "Orientación a la Producción"], correct: 0 },
-        { text: "La etapa de Marketing Social añade una consideración adicional al Marketing tradicional. ¿Cuál es?", choices: ["El crecimiento tecnológico de la empresa", "El bienestar a largo plazo de la sociedad", "La personalización masiva de productos", "La eficiencia en la distribución"], correct: 1 },
+        { text: "¿Cuál de las siguientes orientaciones de gestión empresarial precedió al enfoque de Marketing, centrándose en persuadir al cliente?", choices: ["Orientación a la Venta", 
+ "Orientación al Producto", "Marketing Relacional", "Orientación a la Producción"], correct: 0 },
+        { text: "La etapa de Marketing Social añade una consideración adicional al Marketing tradicional.
+ ¿Cuál es?", choices: ["El crecimiento tecnológico de la empresa", "El bienestar a largo plazo de la sociedad", "La personalización masiva de productos", "La eficiencia en la distribución"], correct: 1 },
         { text: "¿Qué modelo de evolución del Marketing se basa en la idea de que la tecnología y la web han transformado la relación con el cliente?", choices: ["Marketing 1.0", "Marketing 2.0", "Marketing 3.0", "Marketing Transaccional"], correct: 2 },
         
         // Q6-Q15: Terminología Básica
-        { text: "¿Cómo se denomina el estado de carencia percibida (consciente) provocado por un desequilibrio entre lo que se requiere y lo que se tiene?", choices: ["Deseo", "Necesidad", "Demanda", "Oferta"], correct: 1 },
+      
+        { text: "¿Cómo se denomina el estado de carencia percibida (consciente) provoked by un desequilibrio entre lo que se requiere y lo que se tiene?", choices: ["Deseo", "Necesidad", "Demanda", "Oferta"], correct: 1 },
         { text: "El conjunto de individuos o grupos que adquieren y consumen productos y servicios para satisfacer sus necesidades se denomina:", choices: ["Mercado objetivo", "Oferta", "Demanda", "Potencial de mercado"], correct: 2 },
-        { text: "El Mercado Objetivo se refiere al grupo o grupos de clientes:", choices: ["Que buscan siempre el precio más bajo", "Al que se quiere dirigir un producto", "Que ya tienen el producto de la competencia", "Que son líderes de opinión"], correct: 1 },
+        { text: "El Mercado Objetivo se refiere al grupo o grupos de clientes:", choices: ["Que buscan siempre el precio 
+ más bajo", "Al que se quiere dirigir un producto", "Que ya tienen el producto de la competencia", "Que son líderes de opinión"], correct: 1 },
         { text: "¿Qué significa el acrónimo CRM en el glosario de Marketing?", choices: ["Competitive Research Model", "Customer Relationship Management", "Customer Resource Marketing", "Centralized Retail Management"], correct: 1 },
-        { text: "La Oferta se considera el conjunto de organizaciones o individuos que:", choices: ["Realizan la promoción del producto", "Crean, producen y comercializan bienes y servicios", "Gestionan la relación posventa", "Definen el segmento de mercado"], correct: 1 },
+        { text: "La Oferta se considera el conjunto de organizaciones o individuos que:", choices: ["Realizan la promoción del producto", "Crean, producen y comercializan bienes y servicios", "Gestionan la relación posventa", "Definen el segmento 
+ de mercado"], correct: 1 },
         { text: "Un producto, desde la perspectiva de Marketing, puede ser:", choices: ["Solo un bien material", "Solo un servicio", "Un bien material o un servicio", "Exclusivamente lo que se vende en tiendas físicas"], correct: 2 },
         { text: "La función de 'gestionar las relaciones con los clientes' mediante bases de datos es propia de:", choices: ["Marketing Mix", "CRM", "Benchmarking", "Neuromarketing"], correct: 1 },
-        { text: "Un deseo es la manifestación de una necesidad influenciada principalmente por factores:", choices: ["Económicos y legales", "Fisiológicos y biológicos", "Culturales y personales", "Técnicos y operativos"], correct: 2 },
+        { text: "Un deseo es la manifestación de una necesidad influenciada 
+ principalmente por factores:", choices: ["Económicos y legales", "Fisiológicos y biológicos", "Culturales y personales", "Técnicos y operativos"], correct: 2 },
         { text: "¿Qué concepto se refiere al acto de obtener un objeto deseado ofreciendo algo a cambio?", choices: ["Transacción", "Segmentación", "Intercambio", "Utilidad"], correct: 2 },
         { text: "La parte de la demanda que está dispuesta a adquirir un producto específico con un poder adquisitivo determinado se denomina:", choices: ["Deseo latente", "Necesidad absoluta", "Demanda del mercado", "Mercado potencial"], correct: 2 },
 
+        
         // Q16-Q25: Necesidad y Consumidor / Maslow
         { text: "¿Qué nivel de la Pirámide de Maslow incluye la necesidad de reconocimiento, estatus y prestigio?", choices: ["Necesidades Sociales", "Necesidades Fisiológicas", "Necesidad de Estima", "Necesidad de Seguridad"], correct: 2 },
         { text: "¿En qué nivel de la Pirámide de Maslow se sitúa la necesidad de alimentación, descanso y vivienda?", choices: ["Necesidades Sociales", "Necesidades Fisiológicas", "Necesidad de Autorrealización", "Necesidad de Seguridad"], correct: 1 },
-        { text: "La necesidad de amistad, afecto y pertenencia se clasifica como:", choices: ["Necesidades de Seguridad", "Necesidades Sociales", "Necesidad de Estima", "Necesidades Fisiológicas"], correct: 1 },
+        { text: "La necesidad de amistad, afecto y 
+ pertenencia se clasifica como:", choices: ["Necesidades de Seguridad", "Necesidades Sociales", "Necesidad de Estima", "Necesidades Fisiológicas"], correct: 1 },
         { text: "¿Cuál es el nivel más alto en la jerarquía de Maslow?", choices: ["Necesidad de Estima", "Necesidades Sociales", "Necesidad de Seguridad", "Necesidad de Autorrealización"], correct: 3 },
         { text: "La seguridad física, de empleo y de recursos se encuentra en el nivel de:", choices: ["Necesidades Fisiológicas", "Necesidades de Seguridad", "Necesidades Sociales", "Necesidad de Estima"], correct: 1 },
-        { text: "La Pirámide de Maslow postula que una necesidad solo se convierte en motivadora cuando:", choices: ["Es promovida por el marketing", "Se ha satisfecho la necesidad del nivel inferior", "La empresa lanza un producto nuevo", "Se trata de un bien de lujo"], correct: 1 },
+        { text: "La 
+ Pirámide de Maslow postula que una necesidad solo se convierte en motivadora cuando:", choices: ["Es promovida por el marketing", "Se ha satisfecho la necesidad del nivel inferior", "La empresa lanza un producto nuevo", "Se trata de un bien de lujo"], correct: 1 },
         { text: "¿Cómo se define una necesidad desde la perspectiva de marketing?", choices: ["Un problema social no resuelto", "Una oportunidad de negocio", "Un estado de carencia percibida", "El resultado de una campaña publicitaria"], correct: 2 },
-        { text: "Según la perspectiva de los documentos, ¿el marketing se encarga de crear necesidades?", choices: ["Sí, es su principal función", "No, solo orienta los deseos", "Solo en el Marketing 3.0", "Depende del producto"], correct: 1 }, // El texto dice: "La necesidad no la inventa el marketing..."
+        { text: "Según la perspectiva de los 
+ documentos, ¿el marketing se encarga de crear necesidades?", choices: ["Sí, es su principal función", "No, solo orienta los deseos", "Solo en el Marketing 3.0", "Depende del producto"], correct: 1 }, // El texto dice: "La necesidad no la inventa el marketing..."
         { text: "¿Qué busca el consumidor en la satisfacción de una necesidad, más allá del producto en sí?", choices: ["El menor precio posible", "El valor que el producto le aporta", "La máxima durabilidad", "La exclusividad"], correct: 1 },
-        { text: "Cuando un turista elige un hotel de lujo para sentirse importante, ¿qué necesidad de Maslow busca satisfacer principalmente?", choices: ["Fisiológica", "Seguridad", "Social", "Estima"], correct: 3 },
+        { text: "Cuando un turista elige un 
+ hotel de lujo para sentirse importante, ¿qué necesidad de Maslow busca satisfacer principalmente?", choices: ["Fisiológica", "Seguridad", "Social", "Estima"], correct: 3 },
 
         // Q26-Q35: Marketing de Servicios - Características
         { text: "La característica de los servicios que se refiere a que la producción y el consumo suelen ser simultáneos es:", choices: ["Intangibilidad", "Caducidad", "Heterogeneidad", "Inseparabilidad"], correct: 3 },
-        { text: "¿Qué característica implica que los servicios no se pueden ver, probar, oler ni tocar antes de la compra?", choices: ["Intangibilidad", "Caducidad", "Inseparabilidad", "Heterogeneidad"], correct: 0 },
+        { text: "¿Qué característica implica que los servicios no se pueden ver, probar, oler ni tocar antes de la compra?", choices: ["Intangibilidad", 
+ "Caducidad", "Inseparabilidad", "Heterogeneidad"], correct: 0 },
         { text: "La característica que establece que cada prestación de servicio puede diferir según quién la ofrece, cuándo y dónde, es:", choices: ["Inseparabilidad", "Heterogeneidad o Variabilidad", "Caducidad", "Intangibilidad"], correct: 1 },
         { text: "¿Cuál de las siguientes características hace que una habitación de hotel vacía o un asiento de avión sin vender representen oportunidades perdidas?", choices: ["Inseparabilidad", "Heterogeneidad", "Intangibilidad", "Caducidad"], correct: 3 },
-        { text: "Un servicio que no se puede almacenar ni inventariar padece de:", choices: ["Inseparabilidad", "Heterogeneidad", "Caducidad", "Intangibilidad"], correct: 2 },
+        { text: "Un servicio que no se puede almacenar ni 
+ inventariar padece de:", choices: ["Inseparabilidad", "Heterogeneidad", "Caducidad", "Intangibilidad"], correct: 2 },
         { text: "La necesidad de estandarizar los servicios es una respuesta directa a la característica de:", choices: ["Caducidad", "Inseparabilidad", "Heterogeneidad o Variabilidad", "Intangibilidad"], correct: 2 },
         { text: "¿Cuál es la implicación principal de la Intangibilidad en la decisión de compra del cliente?", choices: ["La dificultad de segmentar el mercado", "El riesgo percibido por el cliente es mayor", "La imposibilidad de fijar precios", "La necesidad de mayor inventario"], correct: 1 },
+     
         { text: "La Inseparabilidad requiere que el personal de contacto esté presente en el momento de:", choices: ["La planificación estratégica", "La producción del servicio", "La investigación de mercados", "El diseño de la campaña publicitaria"], correct: 1 },
         { text: "Para paliar la Caducidad, las empresas turísticas deben centrarse en:", choices: ["Aumentar la calidad percibida", "Gestionar la demanda y planificación", "Reducir el personal de contacto", "Incrementar los costes fijos"], correct: 1 },
-        { text: "Un folleto, fotografías o un recorrido virtual son ejemplos de estrategias para paliar la:", choices: ["Caducidad", "Inseparabilidad", "Heterogeneidad", "Intangibilidad"], correct: 3 },
+        { text: "Un folleto, fotografías o un recorrido virtual son ejemplos de 
+ estrategias para paliar la:", choices: ["Caducidad", "Inseparabilidad", "Heterogeneidad", "Intangibilidad"], correct: 3 },
 
         // Q36-Q50: Estrategias del Marketing de Servicios
         { text: "¿Cuál es una estrategia para paliar la Intangibilidad?", choices: ["Variabilizar los costes", "Crear una fuerte imagen de marca corporativa", "Personalizar el servicio", "Aplicar el concepto de ergonomía"], correct: 1 },
-        { text: "La estrategia de 'Tangibilizar el servicio' se logra mediante:", choices: ["El uso de publicidad masiva", "Bienes tangibles como folletos o mobiliario", "La reducción de costes variables", "La subcontratación de procesos"], correct: 1 },
+        { text: "La estrategia de 'Tangibilizar el servicio' se logra mediante:", choices: ["El uso de publicidad masiva", "Bienes tangibles como folletos o mobiliario", "La reducción de costes variables", 
+ "La subcontratación de procesos"], correct: 1 },
         { text: "Ante la Inseparabilidad y Variabilidad, una estrategia clave para asegurar la calidad es:", choices: ["Fijar precios altos", "Formar al personal", "Reducir los puntos de contacto", "Eliminar el soporte físico"], correct: 1 },
         { text: "La aplicación del concepto global de Ergonomía es una estrategia sugerida ante la:", choices: ["Caducidad", "Inseparabilidad y Variabilidad", "Intangibilidad", "Baja demanda"], correct: 1 },
-        { text: "¿Qué significa 'Estandarizar los servicios'?", choices: ["Bajar los precios", "Ofrecer una calidad y proceso consistentes", "Personalizar la oferta", "Aumentar la heterogeneidad"], correct: 1 },
+        { text: "¿Qué significa 'Estandarizar los servicios'?", choices: ["Bajar los precios", "Ofrecer 
+ una calidad y proceso consistentes", "Personalizar la oferta", "Aumentar la heterogeneidad"], correct: 1 },
         { text: "La Personalización y singularización del servicio es una estrategia para gestionar:", choices: ["La Caducidad", "La Intangibilidad", "La Heterogeneidad o Variabilidad", "La Inseparabilidad"], correct: 2 },
         { text: "La Desestacionalización es una estrategia diseñada para enfrentar la:", choices: ["Intangibilidad", "Inseparabilidad", "Caducidad", "Variabilidad"], correct: 2 },
-        { text: "¿Qué estrategia consiste en fijar el precio en función del valor percibido por el cliente?", choices: ["Fijación de precios por costes", "Estrategia contra la Intangibilidad", "Fijación de precios por competencia", "Desestacionalización"], correct: 1 },
+        { text: "¿Qué estrategia consiste en fijar el precio en función del valor percibido por el cliente?", choices: ["Fijación 
+ de precios por costes", "Estrategia contra la Intangibilidad", "Fijación de precios por competencia", "Desestacionalización"], correct: 1 },
         { text: "La Venta Cruzada (cross-selling) y el Upselling son estrategias para:", choices: ["Reducir la Caducidad", "Aumentar la Caducidad", "Gestionar la Variabilidad y aumentar el valor de la transacción", "Disminuir la Intangibilidad"], correct: 2 },
-        { text: "¿Cuál es el objetivo principal de Desestacionalizar la demanda?", choices: ["Aumentar los costes fijos", "Repartir la demanda a lo largo del año", "Concentrar la oferta en temporada alta", "Promocionar solo el producto principal"], correct: 1 },
+        { text: "¿Cuál es el objetivo principal de Desestacionalizar la demanda?", choices: ["Aumentar los costes fijos", "Repartir la demanda a lo largo del año", "Concentrar la oferta en temporada alta", "Promocionar solo el producto 
+ principal"], correct: 1 },
         { text: "El Marketing Relacional es una estrategia enfocada en la:", choices: ["Venta a corto plazo", "Retención y vínculo a largo plazo con el cliente", "Publicidad masiva", "Distribución intensiva"], correct: 1 },
         { text: "¿Qué tipo de estrategia es emplear Sellos de Calidad de reconocido prestigio?", choices: ["Estrategia contra la Caducidad", "Estrategia contra la Intangibilidad", "Estrategia de segmentación", "Estrategia de diferenciación de precios"], correct: 1 },
-        { text: "El concepto de Caducidad implica que es crucial Variabilizar los costes, es decir:", choices: ["Aumentar los costes fijos", "Convertir costes fijos en costes variables", "Depender más de los costes de producción", "Fijar un precio uniforme"], correct: 1 },
+        { text: "El concepto de Caducidad implica que es 
+ crucial Variabilizar los costes, es decir:", choices: ["Aumentar los costes fijos", "Convertir costes fijos en costes variables", "Depender más de los costes de producción", "Fijar un precio uniforme"], correct: 1 },
         { text: "La Formación al personal busca principalmente reducir la:", choices: ["Caducidad", "Variabilidad en la prestación del servicio", "Intangibilidad percibida", "Demanda total del mercado"], correct: 1 },
         { text: "Si un hotel ofrece un recorrido virtual de sus instalaciones, está aplicando una estrategia contra la:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Variabilidad"], correct: 2 },
 
+   
         // ----------------------------------------------------
         // TEMA 2: LA SERVUCCIÓN
         // ----------------------------------------------------
         // Q51-Q60: Concepto y Elementos de la Servucción
         { text: "El neologismo 'Servucción' se forma por la suma de:", choices: ["Servicio + Atención", "Servicio + Producción", "Servicio + Calidad", "Servicio + Venta"], correct: 1 },
-        { text: "¿Qué es la Servucción?", choices: ["La gestión de inventario de servicios", "La organización sistemática de elementos físicos y humanos para la prestación de un servicio", "El proceso de postventa de un producto", "La estrategia de precios de servicios"], correct: 1 },
+        { text: "¿Qué es la Servucción?", choices: ["La gestión de inventario de servicios", "La organización sistemática 
+ de elementos físicos y humanos para la prestación de un servicio", "El proceso de postventa de un producto", "La estrategia de precios de servicios"], correct: 1 },
         { text: "¿Cuál es el papel del Cliente en el proceso de Servucción?", choices: ["Es un observador pasivo", "Es un elemento de control", "Es un elemento indispensable y participante activo", "Es irrelevante si el servicio es automatizado"], correct: 2 },
-        { text: "El soporte físico en la Servucción incluye:", choices: ["Solo los folletos informativos", "El entorno donde se realiza el servicio y los instrumentos necesarios", "El personal de contacto y su formación", "El sistema de organización interna"], correct: 1 },
+        { text: "El soporte físico en la Servucción incluye:", choices: ["Solo los folletos informativos", "El entorno donde se realiza 
+ el servicio y los instrumentos necesarios", "El personal de contacto y su formación", "El sistema de organización interna"], correct: 1 },
         { text: "¿Cómo se denomina al personal que está en contacto directo con el cliente?", choices: ["Staff de soporte", "Personal de logística", "Personal de contacto", "Recursos humanos"], correct: 2 },
         { text: "El resultado intangible del sistema de servucción, cuya característica comercial ha sido predeterminada, es el:", choices: ["Sistema de organización interna", "Soporte físico", "Servicio", "Personal de contacto"], correct: 2 },
+     
         { text: "Los procesos internos y la organización de la empresa que no son visibles para el cliente forman el:", choices: ["Personal de contacto", "Soporte físico", "Sistema de Organización Interna", "El servicio final"], correct: 2 },
         { text: "¿Qué elemento de la Servucción funciona como interfaz entre el cliente y el sistema de organización interna?", choices: ["El servicio", "El Soporte Físico", "El Personal de Contacto", "El manual de procedimientos"], correct: 2 },
-        { text: "¿Cuál de los siguientes elementos de la Servucción es el único que no es visible para el cliente?", choices: ["El Soporte Físico", "El Servicio", "El Personal de Contacto", "El Sistema de Organización Interna"], correct: 3 },
+        { text: "¿Cuál de los siguientes elementos de la Servucción es 
+ el único que no es visible para el cliente?", choices: ["El Soporte Físico", "El Servicio", "El Personal de Contacto", "El Sistema de Organización Interna"], correct: 3 },
         { text: "En el sector turístico, ¿qué elemento de la Servucción suele ser un componente importante de la experiencia por su peso en el ambiente?", choices: ["Sistema de Organización Interna", "Personal de Contacto", "Soporte Físico (el entorno)", "El manual de bienvenida"], correct: 2 },
 
         // Q61-Q70: Tipos de Servucción
-        { text: "Una Servucción sin Soporte Físico ni Personal de Contacto se denomina:", choices: ["Servucción automatizada", "Servucción Artesanal", "Servucción Pura, sin contacto", "Servucción Mixta"], correct: 2 },
+        { text: "Una 
+ Servucción sin Soporte Físico ni Personal de Contacto se denomina:", choices: ["Servucción automatizada", "Servucción Artesanal", "Servucción Pura, sin contacto", "Servucción Mixta"], correct: 2 },
         { text: "El tipo de Servucción que es característico de actividades donde el cliente interactúa con la máquina (con soporte físico y sin personal de contacto) es:", choices: ["Servucción Artesanal", "Servucción automatizada", "Servucción Pura", "Servucción de alta implicación"], correct: 1 },
-        { text: "Un servicio de consulta médica presencial es un ejemplo de Servucción:", choices: ["Automatizada", "Pura, sin contacto", "Artesanal (con soporte físico y con personal de contacto)", "Digital"], correct: 2 },
+        { text: "Un servicio de consulta médica presencial es un ejemplo de Servucción:", choices: ["Automatizada", "Pura, sin contacto", "Artesanal (con soporte 
+ físico y con personal de contacto)", "Digital"], correct: 2 },
         { text: "Un servicio de consultoría telefónica, sin un entorno físico relevante para la prestación, es un ejemplo de Servucción:", choices: ["Artesanal", "Con soporte físico relevante", "Con personal de contacto, sin soporte físico", "Automatizada"], correct: 2 },
         { text: "¿Cuál es el tipo de Servucción más habitual en el sector turístico (hoteles, restaurantes, tours)?", choices: ["Servucción Pura", "Servucción Digital", "Servucción Artesanal", "Servucción Automatizada"], correct: 2 },
-        { text: "¿Cuál de los tipos de Servucción presenta el mayor desafío para la estandarización debido a la alta interacción humana?", choices: ["Servucción Pura", "Servucción Artesanal", "Servucción Automatizada", "Servucción con mínimo contacto"], correct: 1 },
+        { text: "¿Cuál 
+ de los tipos de Servucción presenta el mayor desafío para la estandarización debido a la alta interacción humana?", choices: ["Servucción Pura", "Servucción Artesanal", "Servucción Automatizada", "Servucción con mínimo contacto"], correct: 1 },
         { text: "¿En qué tipo de Servucción la calidad del servicio depende casi exclusivamente de la eficacia del soporte físico y el sistema de organización interna?", choices: ["Servucción Artesanal", "Servucción Automatizada", "Servucción Pura", "Servucción de alto valor"], correct: 1 },
-        { text: "Un cajero automático es un claro ejemplo de:", choices: ["Servucción Artesanal", "Servucción Automatizada", "Servucción con mínimo contacto", "Servucción de alto contacto"], correct: 1 },
+        { text: "Un cajero automático es un claro ejemplo de:", choices: ["Servucción Artesanal", "Servucción 
+ Automatizada", "Servucción con mínimo contacto", "Servucción de alto contacto"], correct: 1 },
         { text: "La Servucción sin contacto con personal, pero con soporte físico, busca un alto nivel de:", choices: ["Personalización", "Eficiencia y estandarización", "Lujo", "Vínculo emocional"], correct: 1 },
         { text: "En el sector turístico, la participación activa del cliente en el proceso de Servucción es generalmente:", choices: ["Mínima", "Media", "Baja", "Elevada"], correct: 3 },
 
         // Q71-Q80: Gestión del Personal de Contacto
+       
         { text: "¿Cuál es uno de los objetivos principales del personal de contacto?", choices: ["Definir el presupuesto anual", "Servir al cliente", "Diseñar nuevos productos", "Gestionar la contabilidad"], correct: 1 },
         { text: "El personal de contacto debe defender los intereses de la empresa a través de dos vías: intereses económicos y:", choices: ["La defensa del marketing mix", "La promoción activa", "Hacer respetar las reglas y procedimientos de la empresa", "La gestión de la cadena de suministro"], correct: 2 },
-        { text: "¿Qué función del personal de contacto responde a la pregunta '¿Qué hacer?' o la realización de los procesos?", choices: ["La función relacional", "La función de defensa", "La función operacional", "La función de soporte"], correct: 2 },
+        { text: "¿Qué función del personal 
+ de contacto responde a la pregunta '¿Qué hacer?' o la realización de los procesos?", choices: ["La función relacional", "La función de defensa", "La función operacional", "La función de soporte"], correct: 2 },
         { text: "La función relacional del personal de contacto se centra en:", choices: ["La logística del servicio", "El modo o la manera ('¿Cómo?') de interaccionar con el cliente", "La parte más técnica del proceso", "El control de costes"], correct: 1 },
-        { text: "Lo visible, lo gestual y lo verbal en la interacción con el cliente forman parte de la función:", choices: ["Operacional", "Transaccional", "Relacional", "Estructural"], correct: 2 },
+        { text: "Lo visible, lo gestual y lo verbal en la interacción con 
+ el cliente forman parte de la función:", choices: ["Operacional", "Transaccional", "Relacional", "Estructural"], correct: 2 },
         { text: "¿Cuál de los siguientes es un pilar fundamental para la correcta gestión del personal de contacto?", choices: ["Reducción de salarios", "Formar al personal", "Disminución de la estandarización", "Ignorar las quejas"], correct: 1 },
         { text: "¿Qué pilar para la gestión del personal busca definir un estilo de empresa y de servicio?", choices: ["Control del personal", "Conceptualizar servucciones facilitadoras", "Reconocimiento del desempeño", "Gestión de incidencias"], correct: 1 },
+   
         { text: "El 'Reconocimiento del desempeño del personal de contacto' es un pilar fundamental para:", choices: ["Disminuir la Variabilidad", "La motivación y la mejora de la calidad", "Reducir la Caducidad", "Aumentar la Intangibilidad"], correct: 1 },
         { text: "El personal de contacto es crucial porque es el único elemento visible de la Servucción que también forma parte del:", choices: ["Consumidor final", "Sistema de Organización Interna", "Competidor", "Soporte físico"], correct: 1 },
-        { text: "La actitud y comportamiento moral poco responsable y poco atento al valor de las normas se define como:", choices: ["Operacional", "Relacional", "Laxo/laxista", "Estandarizado"], correct: 2 },
+        { text: "La actitud y comportamiento moral poco responsable y 
+ poco atento al valor de las normas se define como:", choices: ["Operacional", "Relacional", "Laxo/laxista", "Estandarizado"], correct: 2 },
 
         // Q81-Q90: Gestión del Soporte Físico y Diseño de Servucción
         { text: "La Gestión del Soporte Físico se divide en:", choices: ["Gestión de costes y Gestión de ingresos", "Gestión del personal y Gestión de procesos", "Gestión del espacio y Gestión del tiempo", "Gestión de la demanda y Gestión de la oferta"], correct: 2 },
-        { text: "¿Qué incluye la Gestión del Espacio como parte del Soporte Físico?", choices: ["Solo la decoración", "La disposición y el diseño del entorno", "La duración del servicio", "La formación del personal"], correct: 1 },
+        { text: "¿Qué incluye la Gestión del 
+ Espacio como parte del Soporte Físico?", choices: ["Solo la decoración", "La disposición y el diseño del entorno", "La duración del servicio", "La formación del personal"], correct: 1 },
         { text: "¿Qué incluye la Gestión del Tiempo en la Servucción?", choices: ["La antigüedad de la empresa", "La sincronización y la duración de la prestación", "El diseño arquitectónico", "La fijación de precios"], correct: 1 },
-        { text: "En el Diseño de la Servucción de una actividad turística, ¿cuál es la primera fase a considerar?", choices: ["Soporte físico", "Función del personal de contacto", "Participación del cliente (actos intelectuales, verbales, físicos)", "Sistema interno"], correct: 2 },
+        { text: "En el Diseño de la Servucción de una actividad turística, ¿cuál es la primera fase a considerar?", choices: ["Soporte físico", "Función 
+ del personal de contacto", "Participación del cliente (actos intelectuales, verbales, físicos)", "Sistema interno"], correct: 2 },
         { text: "En el diseño de servucción, el Soporte Físico debe seguir la cronología desde la perspectiva de:", choices: ["La competencia", "Los proveedores", "El cliente", "Los accionistas"], correct: 2 },
         { text: "La función del Personal de Contacto en el diseño de servucción debe indicar el comportamiento que va a permitir:", choices: ["Aumentar la burocracia", "Resolver positivamente la acción del cliente", "Minimizar la interacción", "Reducir los salarios"], correct: 1 },
+ 
         { text: "La Calidad en Servucción se define como:", choices: ["Máximo beneficio para la empresa", "Satisfacción de las necesidades y expectativas del cliente", "Bajo coste de producción", "Alta estandarización de procesos"], correct: 1 },
         { text: "En el sector hotelero, la temperatura ambiental y la comodidad del mobiliario son elementos de:", choices: ["Sistema Interno", "Personal de contacto", "Soporte Físico", "Servicio"], correct: 2 },
-        { text: "El proceso de preparación de alimentos en un restaurante (cocina) que el cliente no ve es parte de:", choices: ["Soporte Físico", "Personal de Contacto", "Sistema de Organización Interna", "Marketing Mix"], correct: 2 },
+        { text: "El proceso de preparación de alimentos en un restaurante (cocina) que el cliente no 
+ ve es parte de:", choices: ["Soporte Físico", "Personal de Contacto", "Sistema de Organización Interna", "Marketing Mix"], correct: 2 },
         { text: "¿Qué se entiende por 'Operacional' en el glosario de Servucción?", choices: ["Aspectos de interacción humana", "Aspectos relacionados con los procesos o parte de ellos", "Aspectos de calidad percibida", "Aspectos de la promoción"], correct: 1 },
 
         // Q91-Q100: Repaso y Aplicación Mixta
-        { text: "¿Qué característica del servicio obliga a aplicar el concepto global de ergonomía?", choices: ["Intangibilidad", "Inseparabilidad y Variabilidad", "Caducidad", "Demanda alta"], correct: 1 },
+        { text: "¿Qué característica del servicio obliga a aplicar el concepto global de ergonomía?", choices: ["Intangibilidad", "Inseparabilidad 
+ y Variabilidad", "Caducidad", "Demanda alta"], correct: 1 },
         { text: "El objetivo de la Venta Cruzada (cross-selling) es:", choices: ["Reemplazar el producto principal", "Ofrecer un servicio complementario al adquirido", "Vender una versión más cara del mismo producto", "Reducir la demanda"], correct: 1 },
         { text: "¿A qué se refiere el concepto de 'Relacional' en el personal de contacto?", choices: ["Interacción entre consumidor y profesional", "Manejo de equipos", "Control de inventario", "Definición de precios"], correct: 0 },
-        { text: "La necesidad de un cliente de pernoctar en un lugar durante un viaje se clasifica como necesidad:", choices: ["Social", "Estima", "Fisiológica / Seguridad", "Autorrealización"], correct: 2 },
+        { text: "La 
+ necesidad de un cliente de pernoctar en un lugar durante un viaje se clasifica como necesidad:", choices: ["Social", "Estima", "Fisiológica / Seguridad", "Autorrealización"], correct: 2 },
         { text: "El uso de Sellos de Calidad y el Marketing Relacional son estrategias que combaten principalmente la:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Variabilidad"], correct: 2 },
-        { text: "¿Cuál de los siguientes es un ejemplo de estrategia para desestacionalizar?", choices: ["Aumentar el precio en temporada alta", "Cerrar en temporada baja", "Ofrecer tarifas muy reducidas en temporada baja", "Reducir el personal en verano"], correct: 2 },
-        { text: "En el modelo de Servucción, la máquina o tecnología (ej. quiosco de check-in) con la que interactúa el cliente se considera:", choices: ["Personal de Contacto", "Sistema de Organización Interna", "Soporte Físico", "Servicio"], correct: 2 },
+        { text: "¿Cuál de los siguientes es un ejemplo de estrategia para desestacionalizar?", choices: ["Aumentar el precio en temporada alta", "Cerrar en temporada baja", "Ofrecer tarifas muy reducidas en temporada baja", "Reducir el personal 
+ en verano"], correct: 2 },
+        { text: "En el modelo de Servucción, la máquina o tecnología (ej.
+ quiosco de check-in) con la que interactúa el cliente se considera:", choices: ["Personal de Contacto", "Sistema de Organización Interna", "Soporte Físico", "Servicio"], correct: 2 },
         { text: "El uso de testimonios y referencias de otros clientes es una forma de paliar la:", choices: ["Caducidad", "Heterogeneidad", "Inseparabilidad", "Intangibilidad"], correct: 3 },
         { text: "Un tour guiado que cambia ligeramente la ruta según el estado de ánimo del guía ese día muestra la característica de:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Heterogeneidad o Variabilidad"], correct: 3 },
+    
         { text: "En el diseño de Servucción, ¿qué tipo de actos incluye la Participación del Cliente?", choices: ["Solo actos físicos (ej. tomar un objeto)", "Solo actos de espera", "Actos intelectuales, verbales, físicos o de espera", "Actos del personal de contacto"], correct: 2 }
     ];
     // --- Fin de la Definición del Array de 100 Preguntas ---
 
 
     // --- Lógica del Cuestionario ---
+
+    /**
+     * Función para mezclar un array (Algoritmo Fisher-Yates) para seleccionar preguntas al azar.
+     * @param {Array} array El array a mezclar.
+     * @returns {Array} Un nuevo array mezclado.
+     */
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
 
     /**
      * Muestra un modal de mensaje.
@@ -304,13 +374,12 @@
 
         studyBtn.classList.remove('ring-4', 'ring-blue-500');
         practiceBtn.classList.remove('ring-4', 'ring-green-500');
-
         if (mode === 'study') {
             studyBtn.classList.add('ring-4', 'ring-blue-500');
         } else if (mode === 'practice') {
             practiceBtn.classList.add('ring-4', 'ring-green-500');
         }
-        startBtn.disabled = false;
+        startBtn.disabled = false; // HABILITA EL BOTÓN DE INICIO
     }
 
     /**
@@ -322,10 +391,16 @@
             return;
         }
 
+        // 1. Barajar las preguntas al inicio para un orden aleatorio (¡NUEVO!)
+        shuffledQuestions = shuffleArray(questions);
+        
+        // 2. Re-inicializar respuestas con el tamaño correcto (MAX_QUESTIONS)
+        userAnswers = new Array(MAX_QUESTIONS).fill(null);
+        currentQuestionIndex = 0; // Asegurarse de que empieza en 0
+
         quizStarted = true;
         document.getElementById('mode-selection').classList.add('hidden');
         document.getElementById('quiz-container').classList.remove('hidden');
-        
         // Configurar la visualización del modo
         const modeDisplay = document.getElementById('mode-display');
         modeDisplay.textContent = currentMode === 'study' ? 'Modo Estudiar' : 'Modo Práctica';
@@ -341,15 +416,18 @@
      */
     function loadQuestion(index) {
         if (index < 0 || index >= MAX_QUESTIONS) return;
+        
+        // Usar la lista de preguntas barajadas (¡MODIFICADO!)
+        if (shuffledQuestions.length === 0) return; 
 
         currentQuestionIndex = index;
-        const q = questions[index];
+        const q = shuffledQuestions[index]; // USAR LAS PREGUNTAS BARAJADAS
         const choicesContainer = document.getElementById('choices-container');
-        choicesContainer.innerHTML = ''; // Limpiar opciones anteriores
+        choicesContainer.innerHTML = '';
+        // Limpiar opciones anteriores
         document.getElementById('question-number').textContent = index + 1;
         document.getElementById('question-text').textContent = q.text;
         document.getElementById('feedback-message').classList.add('hidden');
-
         q.choices.forEach((choice, i) => {
             const btn = document.createElement('button');
             btn.textContent = choice;
@@ -357,6 +435,7 @@
             btn.onclick = () => selectAnswer(i);
             btn.setAttribute('data-index', i);
             choicesContainer.appendChild(btn);
+ 
         });
 
         updateNavigationButtons();
@@ -372,7 +451,7 @@
      * @param {number} selectedIndex Índice de la opción seleccionada.
      */
     function selectAnswer(selectedIndex) {
-        const q = questions[currentQuestionIndex];
+        const q = shuffledQuestions[currentQuestionIndex]; // USAR LAS PREGUNTAS BARAJADAS
         userAnswers[currentQuestionIndex] = selectedIndex;
 
         if (currentMode === 'study') {
@@ -392,7 +471,6 @@
         }
         
         updateNavigationButtons();
-
         // Deshabilitar todos los botones para evitar doble respuesta
         document.getElementById('choices-container').querySelectorAll('.choice-button').forEach(btn => {
             btn.disabled = true;
@@ -406,14 +484,13 @@
      * @param {boolean} showCorrection Si se debe mostrar la corrección (solo en Modo Estudiar).
      */
     function applyAnswerStyles(index, showCorrection = false) {
-        const q = questions[index];
+        const q = shuffledQuestions[index]; // USAR LAS PREGUNTAS BARAJADAS
         const selectedIndex = userAnswers[index];
         const buttons = document.getElementById('choices-container').querySelectorAll('.choice-button');
         const feedback = document.getElementById('feedback-message');
         
         feedback.classList.add('hidden');
         feedback.classList.remove('bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
-
         buttons.forEach((btn, i) => {
             btn.classList.remove('bg-indigo-200', 'ring-2', 'ring-indigo-500', 'correct-answer', 'incorrect-answer', 'border-red-500', 'border-green-500', 'border-gray-200');
             btn.classList.add('border-gray-200', 'bg-white');
@@ -421,14 +498,17 @@
             if (i === selectedIndex) {
                 if (showCorrection) {
                     if (selectedIndex === q.correct) {
-                        btn.classList.add('correct-answer', 'border-green-500');
+       
+                         btn.classList.add('correct-answer', 'border-green-500');
                         feedback.textContent = '¡Correcto!';
                         feedback.classList.remove('hidden');
                         feedback.classList.add('bg-green-100', 'text-green-700');
+       
                     } else {
                         btn.classList.add('incorrect-answer', 'border-red-500');
                         feedback.textContent = `Incorrecto. La respuesta correcta es: ${q.choices[q.correct]}`;
                         feedback.classList.remove('hidden');
+     
                         feedback.classList.add('bg-red-100', 'text-red-700');
                     }
                 } else {
@@ -446,7 +526,6 @@
                 btn.classList.add('disabled', 'cursor-not-allowed');
             }
         });
-        
         // Asegurar que el botón Siguiente/Finalizar esté disponible si ya respondió
         document.getElementById('next-button').disabled = false;
     }
@@ -476,7 +555,6 @@
      */
     function updateNavigationButtons() {
         document.getElementById('prev-button').disabled = currentQuestionIndex === 0;
-        
         const nextButton = document.getElementById('next-button');
         
         if (currentQuestionIndex === MAX_QUESTIONS - 1) {
@@ -501,13 +579,12 @@
     function calculateAndDisplayResults() {
         let correctCount = 0;
         for (let i = 0; i < MAX_QUESTIONS; i++) {
-            if (userAnswers[i] === questions[i].correct) {
+            if (userAnswers[i] !== null && userAnswers[i] === shuffledQuestions[i].correct) { // USAR PREGUNTAS BARAJADAS Y verificar si hay respuesta
                 correctCount++;
             }
         }
 
         const percentage = Math.round((correctCount / MAX_QUESTIONS) * 100);
-        
         document.getElementById('quiz-container').classList.add('hidden');
         document.getElementById('results-container').classList.remove('hidden');
 
@@ -516,7 +593,6 @@
 
         scoreElement.textContent = `${percentage}%`;
         messageElement.textContent = `Respuestas correctas: ${correctCount} de ${MAX_QUESTIONS}`;
-
         scoreElement.classList.remove('text-red-500', 'text-yellow-500', 'text-green-500', 'text-indigo-600');
 
         if (percentage < 50) {
@@ -547,12 +623,12 @@
         currentQuestionIndex = 0;
         userAnswers = new Array(MAX_QUESTIONS).fill(null);
         quizStarted = false;
+        shuffledQuestions = []; // Reiniciar el array de preguntas barajadas
 
         document.getElementById('mode-selection').classList.remove('hidden');
         document.getElementById('quiz-container').classList.add('hidden');
         document.getElementById('results-container').classList.add('hidden');
         document.getElementById('start-button').disabled = true;
-
         // Limpiar estilos de los botones de modo
         document.getElementById('btn-study').classList.remove('ring-4', 'ring-blue-500');
         document.getElementById('btn-practice').classList.remove('ring-4', 'ring-green-500');
@@ -563,9 +639,6 @@
         // Inicializa el botón "Siguiente"
         document.getElementById('next-button').disabled = true;
     });
-
 </script>
 </body>
 </html>
-
-
