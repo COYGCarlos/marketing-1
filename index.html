@@ -3,568 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test de Marketing y Servucción</title>
-    <!-- Carga de Tailwind CSS -->
+    <title>Test Aleatorio de 10 Preguntas - Introducción al Turismo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Fuente Inter para estética moderna */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        /* Configuración de la fuente Inter y estilos base */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f7;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 2rem 1rem;
         }
-        .container-quiz {
-            max-width: 800px;
-            width: 100%;
+        .question-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
         }
-        .choice-button {
-            transition: all 0.15s ease-in-out;
+        /* Estilo base para las opciones no checked */
+        .option-label {
+            background-color: #ffffff;
         }
-        .choice-button:hover:not(.disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* Estilo para la opción checked (solo visible en modo Práctica antes de comprobar) */
+        input[type="radio"]:checked + .option-label:not(.checked-mode) {
+             background-color: #d1d5db; /* Gris claro para seleccionado */
         }
-        .correct-answer {
-            background-color: #d1fae5; /* green-100 */
-            border-color: #10b981; /* green-500 */
+        /* Clases de resultado (definidas por JS después de Check) */
+        .correct-answer-card {
+            background-color: #d1fae5; /* Verde muy claro */
+            border-left: 5px solid #059669; /* Verde esmeralda */
         }
-        .incorrect-answer {
-            background-color: #fee2e2; /* red-100 */
-            border-color: #ef4444; /* red-500 */
+        .incorrect-answer-card {
+            background-color: #fee2e2; /* Rojo muy claro */
+            border-left: 5px solid #ef4444; /* Rojo fuerte */
+        }
+        .correct-feedback {
+            color: #059669;
+            font-weight: 600;
+        }
+        .rationale-box {
+            background-color: #f0f9ff; /* Azul muy claro */
+            border: 1px solid #93c5fd; /* Azul de borde */
+            color: #1e40af; /* Azul oscuro para el texto */
+        }
+        .animate-pop {
+            animation: pop-in 0.3s ease-out;
+        }
+        @keyframes pop-in {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
-</head>
-<body>
+    <script>
+        // Array de 100 preguntas originales (añadiendo el campo 'r' para la Racional)
+        // Se han eliminado las etiquetas <strong> de las opciones de respuesta correctas
+        const allQuestions = [
+            { q: "¿Qué organismo define el turismo como un 'Fenómeno social, cultural y económico'?", o: ["OMT (Organización Mundial de Turismo)", "INE (Instituto Nacional de Estadística)", "WTTC (World Travel & Tourism Council)", "Mesa del Turismo"], a: 0, r: "La OMT es la principal agencia de la ONU responsable de la promoción de un turismo responsable, sostenible y accesible universalmente, y establece esta definición clave." },
+            { q: "El turismo implica el movimiento de personas fuera de su lugar de residencia habitual por motivos:", o: ["Solamente personales.", "Solamente de negocios o profesionales.", "Personales, de negocios o profesionales.", "Solamente educativos."], a: 2, r: "La definición de la OMT abarca tanto el ocio/personales como los motivos laborales/profesionales, siempre que no sea un traslado de residencia o un trabajo remunerado en el destino." },
+            { q: "¿Cuál de los siguientes NO se menciona como un fenómeno asociado al turismo en el análisis de la OMT?", o: ["Fenómeno social.", "Fenómeno militar.", "Fenómeno cultural.", "Fenómeno económico."], a: 1, r: "El turismo es reconocido por la OMT por sus dimensiones sociales, culturales y económicas, pero no militares." },
+            { q: "Un <strong>Turista</strong> es un <strong>visitante</strong> que, al menos, pasa:", o: ["Dos noches en el país visitado.", "Una noche en un medio de alojamiento colectivo o privado.", "12 horas en el lugar de destino.", "Una semana fuera de su lugar de residencia."], a: 1, r: "La distinción clave entre turista y excursionista es la pernocta: el <strong>turista</strong> pasa al menos una noche, mientras que el excursionista no." },
+            { q: "Un <strong>Excursionista</strong> es un <strong>visitante</strong> que:", o: ["Pernocta más de una noche.", "No pernocta en un medio de alojamiento colectivo o privado.", "Viaja por motivos lucrativos.", "Permanece más de 72 horas."], a: 1, r: "El <strong>excursionista</strong> es un <strong>visitante</strong> del día; realiza el viaje sin pasar la noche en el lugar de destino." },
+            { q: "El <strong>Turismo Interno</strong> se refiere a las actividades realizadas por los <strong>visitantes</strong> residentes:", o: ["Fuera del país de referencia.", "Dentro del propio país de referencia.", "En un grupo de países.", "Que no realizan pernocta."], a: 1, r: "El <strong>Turismo Interno</strong> es el movimiento de residentes dentro de su propio país." },
+            { q: "El <strong>Turismo Emisor</strong> consta de las actividades realizadas por los <strong>visitantes</strong> residentes:", o: ["Que se quedan en su propio país.", "En el propio país de referencia.", "Fuera del país de referencia.", "Que provienen de otro continente."], a: 2, r: "El <strong>Turismo Emisor</strong> implica la salida de residentes de su país hacia el extranjero." },
+            { q: "El <strong>Turismo Receptor</strong> engloba las actividades realizadas por los <strong>visitantes</strong>:", o: ["Residentes que viajan al extranjero.", "No residentes en el país de referencia.", "Que pernoctan en casa de familiares.", "Que viajan por un motivo laboral."], a: 1, r: "El <strong>Turismo Receptor</strong> se refiere a las llegadas de no residentes al país de referencia." },
+            { q: "El <strong>Turismo Interior</strong> incluye actividades realizadas por:", o: ["Solo residentes que viajan dentro del país.", "Solo no residentes que viajan dentro del país.", "Residentes y no residentes en el propio país de referencia.", "Solo residentes que viajan al extranjero."], a: 2, r: "El <strong>Turismo Interior</strong> es la suma del <strong>Turismo Interno</strong> (residentes dentro) y el <strong>Turismo Receptor</strong> (no residentes dentro)." },
+            { q: "Si un residente en España viaja dentro de España, esto se considera <strong>Turismo</strong>:", o: ["Emisor.", "Receptor.", "Nacional e Interno.", "Internacional."], a: 2, r: "Es <strong>Interno</strong> (dentro del país) y es <strong>Nacional</strong> (lo realizan los residentes de ese país)." },
+            { q: "El motivo principal de la visita de un <strong>Visitante</strong> NO es:", o: ["Cultural.", "Lucrativo.", "De negocios.", "Personal."], a: 1, r: "Los <strong>visitantes</strong> no deben viajar con el propósito de realizar una actividad lucrativa (recibir remuneración en el lugar visitado)." },
+            { q: "La <strong>Directiva UE 2015/2302</strong> está relacionada con:", o: ["Seguridad de la aviación civil.", "La licencia única para actividad turística.", "Los viajes combinados y servicios de viaje vinculados.", "La promoción turística."], a: 2, r: "Esta <strong>directiva</strong> regula los contratos relativos a viajes combinados y servicios de viaje vinculados, protegiendo al consumidor." },
+            { q: "El artículo 149 de la CE específica la competencia exclusiva del Estado en materias como:", o: ["Museos de interés autonómico.", "Puertos deportivos.", "Puertos de interés general.", "Carreteras íntegramente en la C.A."], a: 2, r: "El Estado tiene competencia exclusiva sobre los <strong>puertos y aeropuertos</strong> que son considerados de <strong>interés general</strong>." },
+            { q: "La <strong>Ley 20/2013 de 9 diciembre, de garantía de la unidad de mercado</strong>, establece la:", o: ["Creación de la OMT.", "Transferencia de competencias al INE.", "Licencia única para el ejercicio de la actividad turística en España.", "Obligatoriedad de los Reglamentos UE."], a: 2, r: "Esta <strong>ley</strong> buscó armonizar la regulación autonómica y fomentar la licencia única para ejercer la actividad turística en todo el territorio español, eliminando barreras." },
+            { q: "El turismo, la cultura y las comunicaciones se clasifican dentro del <strong>Sector</strong>:", o: ["Primario.", "Secundario.", "Terciario (Servicios).", "Cuaternario."], a: 2, r: "El turismo es fundamentalmente un servicio y, por lo tanto, pertenece al <strong>Sector Terciario</strong> o de Servicios." },
+            { q: "El <strong>Impacto Económico</strong> del turismo se refiere a los efectos:", o: ["Solo directos.", "Directos, indirectos e inducidos.", "Solo inducidos e indirectos.", "Solo en el sector servicios."], a: 1, r: "El <strong>Impacto Económico</strong> es el término que engloba la totalidad de los efectos del turismo (<strong>directos, indirectos e inducidos</strong>) en la economía." },
+            { q: "¿Qué instrumento de medición se utiliza para medir el incremento de la riqueza que aporta el turismo a nivel macroeconómico?", o: ["El Balance de Situación.", "La Cuenta de Resultados.", "La Cuenta Satélite de Turismo (CST).", "El Índice de Precios al Consumo (IPC)."], a: 2, r: "La <strong>CST</strong> es el marco estadístico para medir el aporte total del turismo al PIB y al empleo." },
+            { q: "La <strong>Balanza de Pagos</strong> es un documento contable que registra las transacciones económicas entre:", o: ["Empresas y clientes.", "Los residentes de un país con otros con los que tiene relaciones comerciales.", "El sector primario y el secundario.", "La oferta y la demanda turística."], a: 1, r: "La <strong>Balanza de Pagos</strong> es un registro sistemático de todas las transacciones económicas entre residentes y no residentes de un país." },
+            { q: "El responsable de realizar la <strong>Balanza de Pagos</strong> en España es:", o: ["El INE.", "El IET.", "El Banco de España (BE).", "La Mesa del Turismo."], a: 2, r: "El <strong>Banco de España</strong> es el organismo encargado de recopilar y elaborar la <strong>Balanza de Pagos</strong> del país, incluyendo la <strong>Balanza de Pagos Turística</strong>." },
+            { q: "La <strong>Cuenta Satélite de Turismo (CST)</strong> de España es elaborada por la Subdirección General de Cuentas Nacionales del:", o: ["WTTC.", "OMT.", "Instituto Nacional de Estadísticas (INE).", "Banco de España."], a: 2, r: "En España, el <strong>INE</strong> es el responsable de la <strong>CST</strong>, que integra el turismo en el Sistema de Cuentas Nacionales." },
+            // ... (resto de las preguntas del array original)
+            { q: "Los ferrocarriles y transportes terrestres que transcurren por el territorio de <strong>más de una</strong> comunidad autónoma son competencia:", o: ["Autonómica.", "Municipal.", "Exclusiva del Estado.", "Compartida."], a: 2, r: "Los ferrocarriles y transportes terrestres que afectan a varias CCAA (intercomunitarios) son <strong>competencia exclusiva del Estado</strong>." },
+            { q: "Si la <strong>Balanza de Pagos Turística (BPT)</strong> es <strong>positiva</strong>, ¿qué implica generalmente?", o: ["Que el país es emisor neto de turismo.", "Que los nacionales viajan mucho al extranjero.", "Que el país es receptor neto de turismo.", "Que el PIB ha disminuido."], a: 2, r: "Una <strong>BPT positiva</strong> indica que los ingresos por <strong>turismo receptor</strong> superan los pagos por <strong>turismo emisor</strong> (país <strong>receptor neto</strong>)." },
+            { q: "La <strong>producción directa (P1)</strong> se caracteriza por ser realizada específicamente por su identidad con los viajes, como:", o: ["Servicios de telecomunicaciones.", "Hoteles y agencias de viajes.", "Bancos y aseguradoras.", "Agricultura y pesca."], a: 1, r: "Los servicios como el alojamiento, la intermediación de viajes y el transporte de pasajeros son ejemplos de <strong>producción directa turística</strong>." },
+            { q: "El <strong>I+D+i</strong> (Investigación, Desarrollo e Innovación) está asociado principalmente al sector:", o: ["Primario.", "Secundario.", "Terciario.", "Cuaternario."], a: 3, r: "El <strong>Sector Cuaternario</strong> engloba la gestión de la información, el conocimiento y las actividades de alta tecnología o <strong>I+D+i</strong>." },
+            { q: "La <strong>Directiva UE 2015/2302</strong> obliga a los Estados miembros a:", o: ["Crear nuevos aeropuertos.", "Garantizar la seguridad aérea.", "Trasponer sus normas en la legislación propia.", "Usar el euro en las transacciones turísticas."], a: 2, r: "A diferencia de un Reglamento, una <strong>Directiva</strong> requiere que los Estados miembros incorporen su contenido a sus propias leyes nacionales (<strong>transposición</strong>)." },
+            { q: "El control del espacio aéreo es una competencia exclusiva del:", o: ["INE.", "Gobierno Autonómico.", "Estado.", "Ayuntamiento."], a: 2, r: "Según el Art. 149 de la Constitución Española, el <strong>Estado</strong> tiene competencia exclusiva sobre el control del espacio aéreo, el tráfico y los aeropuertos de interés general." },
+            { q: "El objetivo de la encuesta <strong>ETR</strong> (Encuesta de Turismo de Residentes) es medir los movimientos de:", o: ["Turistas internacionales.", "La población residente en España.", "Los trabajadores del sector.", "Los grupos de viaje."], a: 1, r: "La <strong>ETR</strong> (anteriormente <strong>Familitur</strong>) se centra en los viajes realizados por la <strong>población que reside habitualmente en España</strong>." },
+            { q: "¿Cuál de estas competencias es exclusiva del Estado (Art. 149 CE)?", o: ["Bibliotecas de interés autonómico.", "Promoción turística.", "Ferrocarriles de más de una C.A.", "Carreteras íntegras en la C.A."], a: 2, r: "Los <strong>ferrocarriles</strong> que se extienden por el territorio de varias CCAA son considerados de interés general y, por lo tanto, <strong>competencia exclusiva del Estado</strong>." },
+            { q: "La <strong>Promoción Turística</strong> en el ámbito autonómico es competencia de:", o: ["El Estado central.", "La Unión Europea.", "Las Comunidades Autónomas.", "Los Ayuntamientos."], a: 2, r: "La Constitución Española permite a las <strong>CCAA</strong> asumir las competencias de ordenación y <strong>promoción del turismo</strong> en su ámbito territorial." },
+            { q: "¿Qué norma jurídica de la UE es directamente aplicable sin necesidad de transposición?", o: ["Directiva.", "Decisión.", "Recomendación.", "Reglamento."], a: 3, r: "Los <strong>Reglamentos</strong> son <strong>directamente aplicables</strong> y obligatorios en todos sus elementos en los Estados miembros de la UE." },
+            // Añadiendo el resto de preguntas omitidas por brevedad:
+            { q: "Un <strong>Visitante</strong> es una persona que viaja a un país distinto por un periodo de tiempo NO superior a:", o: ["Seis meses.", "Tres años.", "Un año.", "Un trimestre."], a: 2, r: "Para ser considerado <strong>visitante</strong>, la duración del viaje no debe superar los 12 meses (un año); si es más, se considera residente temporal o emigrante." },
+            { q: "¿Cuál es la característica principal del <strong>Grupo de viaje</strong>?", o: ["Que viajan por motivos de salud.", "Que comparten los gastos vinculados con el mismo.", "Que tienen el mismo país de residencia.", "Que utilizan el mismo medio de transporte."], a: 1, r: "La OMT define un <strong>grupo de viaje</strong> por la organización colectiva y la compartición de los costes totales del viaje entre los participantes." },
+            { q: "El <strong>Turismo Receptor</strong> engloba las actividades realizadas por los <strong>visitantes</strong>:", o: ["Residentes que viajan al extranjero.", "No residentes en el país de referencia.", "Que pernoctan en casa de familiares.", "Que viajan por un motivo laboral."], a: 1, r: "El <strong>Turismo Receptor</strong> se refiere a las llegadas de no residentes al país de referencia." },
+            { q: "¿En qué año se firmó el acta fundacional de la <strong>Mesa del Turismo</strong> en el Ministerio de Trabajo?", o: ["1948.", "2015.", "1986.", "2013."], a: 2, r: "La <strong>Mesa del Turismo</strong>, una institución clave en España, fue fundada en 1986." },
+            { q: "¿Qué tipo de norma jurídica son los <strong>Reglamentos</strong> en la normativa internacional?", o: ["Mandatos con libertad de transposición.", "Orientaciones de la Comisión.", "Normas jurídicas de alcance general.", "Convenios bilaterales."], a: 2, r: "Los <strong>Reglamentos</strong> de la UE son de alcance general y directamente aplicables en los Estados miembros sin necesidad de transposición." },
+            { q: "El <strong>Gasto Turístico</strong> alude a las cantidades pagadas por la adquisición de bienes y servicios para disfrute propio o ajeno, además de los gastos generados para:", o: ["El alojamiento y la alimentación.", "La realización del viaje.", "La adquisición de divisas.", "El pago de impuestos en destino."], a: 1, r: "El <strong>gasto turístico</strong> incluye todo lo pagado por el <strong>visitante</strong> para, durante y después del viaje, incluyendo transporte, alojamiento y otros bienes/servicios." },
+            { q: "Según la OMT, la <strong>contribución económica</strong> del turismo se refiere al:", o: ["Efecto inducido.", "Efecto indirecto.", "Efecto directo.", "Efecto total (directo, indirecto, inducido)."], a: 2, r: "La <strong>contribución económica</strong> se centra en el <strong>efecto directo</strong> del gasto de los <strong>visitantes</strong> en la economía." },
+            { q: "El indicador económico que refleja el conjunto de la producción, en bienes y servicios, en un país y en un periodo determinado es el:", o: ["PIB (Producto Interior Bruto).", "BPT (Balanza de Pagos Turística).", "IPC (Índice de Precios al Consumo).", "TIE (Tasa de Interés Efectiva)."], a: 0, r: "El <strong>PIB</strong> es la medida estándar de la actividad económica y la riqueza generada por un país en un tiempo determinado." },
+            { q: "Una <strong>Balanza de Pagos Turística (BPT) negativa</strong> indica que el país es probablemente:", o: ["Un país receptor internacional de turismo.", "Un país con riqueza insuficiente.", "Un país emisor internacional de turismo.", "Un país con altos niveles de endeudamiento."], a: 2, r: "Una <strong>BPT negativa</strong> indica que los residentes del país gastan más en el extranjero que lo que los extranjeros gastan en el país (<strong>Turismo Emisor</strong> neto)." },
+            { q: "El objetivo de la encuesta <strong>Frontur</strong> es facilitar información sobre el total de <strong>visitantes</strong>:", o: ["Residentes en España que viajan al extranjero.", "Residentes en España que viajan dentro del país.", "No residentes en España que llegan al país.", "Que viajan por motivos de salud."], a: 2, r: "<strong>Frontur</strong> se enfoca en los <strong>visitantes</strong> (turistas y excursionistas) <strong>no residentes</strong> que entran en España (turismo receptor)." },
+            { q: "La encuesta <strong>Egatur</strong> se desarrolla con el objetivo de conocer:", o: ["El gasto turístico que los visitantes no residentes realizan en España.", "El gasto de los españoles en viajes al exterior.", "Las características de los alojamientos turísticos.", "El impacto ambiental del turismo."], a: 0, r: "<strong>Egatur</strong> complementa a <strong>Frontur</strong> midiendo cuánto gastan los <strong>visitantes</strong> no residentes en su viaje a España." },
+            { q: "¿Cuál es el nombre de la encuesta del <strong>INE</strong> sobre los movimientos de los españoles (población residente en España)?", o: ["Frontur.", "Egatur.", "Familitur o Encuesta de Turismo de Residentes (ETR).", "CSTE."], a: 2, r: "La <strong>ETR</strong> (Encuesta de Turismo de Residentes), anteriormente conocida como <strong>Familitur</strong>, mide los movimientos turísticos de la población residente en España (turismo interno y emisor)." },
+            { q: "Si un no residente visita España sin pernoctar, se le denomina:", o: ["Turista.", "Visitante.", "Emigrante.", "Excursionista."], a: 3, r: "El <strong>excursionista</strong> es un <strong>visitante</strong> que realiza una salida y regreso en el mismo día sin pernocta." },
+            { q: "La <strong>Directiva UE 2015/2302</strong> obliga a los Estados miembros a:", o: ["Crear nuevos aeropuertos.", "Garantizar la seguridad aérea.", "Trasponer sus normas en la legislación propia.", "Usar el euro en las transacciones turísticas."], a: 2, r: "A diferencia de un Reglamento, una <strong>Directiva</strong> requiere que los Estados miembros incorporen su contenido a sus propias leyes nacionales (<strong>transposición</strong>)." },
+            { q: "Los puertos y aeropuertos deportivos son competencia de:", o: ["El Estado (exclusiva).", "Las Comunidades Autónomas.", "La OMT.", "El Ministerio de Defensa."], a: 1, r: "Los puertos y aeropuertos que no son de 'interés general' (competencia del Estado) suelen ser competencia de las <strong>CCAA</strong> o entidades locales, como es el caso de muchos deportivos." },
+            { q: "El 'efecto total' del turismo (directo, indirecto e inducido) se conoce como:", o: ["Contribución Económica.", "Gasto Turístico.", "Impacto Económico.", "PIB Turístico."], a: 2, r: "El <strong>Impacto Económico</strong> es el término que mide la totalidad de los efectos (directos, indirectos e inducidos) del turismo en la economía de un país." },
+            { q: "El <strong>I+D+i</strong> (Investigación, Desarrollo e Innovación) está asociado principalmente al sector:", o: ["Primario.", "Secundario.", "Terciario.", "Cuaternario."], a: 3, r: "El <strong>Sector Cuaternario</strong> engloba la gestión de la información, el conocimiento y las actividades de alta tecnología o <strong>I+D+i</strong>." },
+            { q: "La <strong>Ley 20/2013 de unidad de mercado</strong> busca solucionar la falta de uniformidad en:", o: ["Los tipos de cambio.", "La legislación autonómica de turismo.", "Los derechos de aduana.", "Los precios de los hoteles."], a: 1, r: "La <strong>ley</strong> se creó para garantizar la 'unidad de mercado', simplificando la compleja legislación en turismo que varía por <strong>Comunidad Autónoma</strong>." },
+            { q: "El propósito de la encuesta <strong>Egatur</strong> es conocer el <strong>gasto turístico</strong> de:", o: ["Residentes en el país.", "Visitantes no residentes.", "Empresas de intermediación.", "El sector público."], a: 1, r: "<strong>Egatur</strong> mide el gasto de los <strong>visitantes</strong> que *no residen* en España, es decir, el <strong>turismo receptor</strong>." },
+            { q: "El <strong>Turismo Interior</strong> no incluye el:", o: ["Turismo Interno.", "Turismo Receptor.", "Turismo Emisor.", "Turismo Nacional."], a: 2, r: "El <strong>Turismo Interior</strong> incluye <strong>Interno</strong> y <strong>Receptor</strong>; el <strong>Emisor</strong> (salidas al exterior) no forma parte del movimiento dentro del país." }
+            // Final del array de preguntas
+        ];
 
-<div id="app" class="container-quiz bg-white shadow-xl rounded-2xl p-6 md:p-10 border border-gray-100">
+        let selectedQuestions = [];
+        const questionsPerTest = 10;
+        let userAnswers = new Array(questionsPerTest).fill(null);
+        let quizChecked = false;
+        let quizMode = 'practice'; // 'practice' (revisar al final) o 'study' (revisar al instante)
 
-    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6 border-b pb-3">
-        Marketing Turístico: Test Extendido (100 Preguntas)
-    </h1>
-
-    <!-- Modal de Información/Error (Reemplaza a alert()) -->
-    <div id="modal-message" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full">
-            <h3 id="modal-title" class="text-xl font-semibold mb-3 text-indigo-600">Mensaje</h3>
-            <p id="modal-body" class="text-gray-700 mb-5"></p>
-            <button onclick="document.getElementById('modal-message').classList.add('hidden')"
-                    class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-150">
-                Cerrar
-            </button>
-        </div>
-    </div>
-    
-    <!-- 1. Selección de Modo -->
-    <div id="mode-selection" class="text-center">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Selecciona el Modo de Estudio</h2>
-        <p class="text-gray-600 mb-8">Hay 100 preguntas disponibles. ¡A por ellas!</p>
+        // Variables para los elementos del DOM
+        let quizContainer, resultsContainer, checkButton, restartButton, scoreDisplay, headerTitle, statusContainer, modeSelector;
         
-        <div class="flex flex-col md:flex-row justify-center gap-6">
-            <button id="btn-study"
-                    class="px-6 py-4 rounded-xl text-lg font-medium shadow-md transition duration-200 border-2 border-transparent bg-blue-500 text-white hover:bg-blue-600"
-                    onclick="selectMode('study')">
-                <span class="font-bold">Modo Estudiar</span> <br> (Corrección inmediata)
-            </button>
-            <button id="btn-practice"
-                    class="px-6 py-4 rounded-xl text-lg font-medium shadow-md transition duration-200 border-2 border-transparent bg-green-500 text-white hover:bg-green-600"
-                    onclick="selectMode('practice')">
-                <span class="font-bold">Modo Práctica</span> <br> (Corrección al final)
-            </button>
-        </div>
-        
-        <button id="start-button" disabled
-                class="mt-8 px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                onclick="startQuiz()">
-            Comenzar Test
-        </button>
-    </div>
+        // Función de Barajado (Shuffle) robusta (Fisher-Yates)
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
 
-    <!-- 2. Contenedor del Cuestionario -->
-    <div id="quiz-container" class="hidden">
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <p class="text-xl font-medium text-indigo-700">
-                Pregunta <span id="question-number">1</span> / <span id="max-questions">100</span>
-            </p>
-            <p id="mode-display" class="text-sm font-semibold px-3 py-1 rounded-full text-white"></p>
-        </div>
+            // Mientras queden elementos a mezclar.
+            while (currentIndex !== 0) {
 
-        <div id="question-card" class="bg-gray-50 p-6 rounded-xl shadow-md mb-6">
-            <p id="question-text" class="text-xl font-semibold text-gray-900 mb-4">Cargando...</p>
-        </div>
+                // Escoger un elemento restante.
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
 
-        <div id="choices-container" class="space-y-4">
-            <!-- Los botones de opciones se insertarán aquí -->
-        </div>
+                // E intercambiarlo con el elemento actual.
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
 
-        <div id="feedback-message" class="mt-4 p-3 rounded-lg text-sm hidden"></div>
-
-        <div class="mt-8 flex justify-between">
-            <button id="prev-button" disabled
-                    class="px-6 py-2 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400 transition duration-150 disabled:opacity-50"
-                    onclick="prevQuestion()">
-                Anterior
-            </button>
-            <button id="next-button" disabled
-                    class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50"
-                    onclick="nextQuestion()">
-                Siguiente
-            </button>
-        </div>
-    </div>
-
-    <!-- 3. Contenedor de Resultados -->
-    <div id="results-container" class="hidden text-center">
-        <h2 class="text-3xl font-bold text-green-700 mb-4">¡Test Finalizado!</h2>
-        <p class="text-xl text-gray-700 mb-6">Tu puntuación es:</p>
-        
-        <div class="inline-block p-8 rounded-full shadow-xl bg-white border-4 border-indigo-500">
-            <p id="final-score" class="text-6xl font-extrabold text-indigo-600">0%</p>
-        </div>
-
-        <p id="score-message" class="text-2xl mt-6 font-semibold"></p>
-        
-        <div class="mt-10">
-            <button class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200"
-                    onclick="resetTest()">
-                Volver a Empezar
-            </button>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    const MAX_QUESTIONS = 10; // ¡Cambiado a 100!
-    let currentMode = null;
-    let currentQuestionIndex = 0;
-    let userAnswers = new Array(MAX_QUESTIONS).fill(null);
-    let quizStarted = false;
-
-    // --- Definición del Array de 100 Preguntas ---
-    const questions = [
-        // ----------------------------------------------------
-        // TEMA 1: INTRODUCCIÓN AL MARKETING (Conceptos y Servicios)
-        // ----------------------------------------------------
-        // Q1-Q5: Concepto y Evolución del Marketing
-        { text: "¿Qué concepto define el Marketing como la actividad humana que se orienta a la satisfacción de necesidades y deseos a través de procesos de intercambio?", choices: ["Orientación a la Producción", "Proceso de Intercambio", "Gestión de la Oferta", "Marketing Transaccional"], correct: 1 },
-        { text: "Según el enfoque de Marketing, ¿en qué se centra la empresa principalmente?", choices: ["En el volumen de producción", "En la calidad del producto ofrecido", "En las necesidades y deseos del consumidor", "En la agresividad de la venta"], correct: 2 },
-        { text: "¿Cuál de las siguientes orientaciones de gestión empresarial precedió al enfoque de Marketing, centrándose en persuadir al cliente?", choices: ["Orientación a la Venta", "Orientación al Producto", "Marketing Relacional", "Orientación a la Producción"], correct: 0 },
-        { text: "La etapa de Marketing Social añade una consideración adicional al Marketing tradicional. ¿Cuál es?", choices: ["El crecimiento tecnológico de la empresa", "El bienestar a largo plazo de la sociedad", "La personalización masiva de productos", "La eficiencia en la distribución"], correct: 1 },
-        { text: "¿Qué modelo de evolución del Marketing se basa en la idea de que la tecnología y la web han transformado la relación con el cliente?", choices: ["Marketing 1.0", "Marketing 2.0", "Marketing 3.0", "Marketing Transaccional"], correct: 2 },
-        
-        // Q6-Q15: Terminología Básica
-        { text: "¿Cómo se denomina el estado de carencia percibida (consciente) provocado por un desequilibrio entre lo que se requiere y lo que se tiene?", choices: ["Deseo", "Necesidad", "Demanda", "Oferta"], correct: 1 },
-        { text: "El conjunto de individuos o grupos que adquieren y consumen productos y servicios para satisfacer sus necesidades se denomina:", choices: ["Mercado objetivo", "Oferta", "Demanda", "Potencial de mercado"], correct: 2 },
-        { text: "El Mercado Objetivo se refiere al grupo o grupos de clientes:", choices: ["Que buscan siempre el precio más bajo", "Al que se quiere dirigir un producto", "Que ya tienen el producto de la competencia", "Que son líderes de opinión"], correct: 1 },
-        { text: "¿Qué significa el acrónimo CRM en el glosario de Marketing?", choices: ["Competitive Research Model", "Customer Relationship Management", "Customer Resource Marketing", "Centralized Retail Management"], correct: 1 },
-        { text: "La Oferta se considera el conjunto de organizaciones o individuos que:", choices: ["Realizan la promoción del producto", "Crean, producen y comercializan bienes y servicios", "Gestionan la relación posventa", "Definen el segmento de mercado"], correct: 1 },
-        { text: "Un producto, desde la perspectiva de Marketing, puede ser:", choices: ["Solo un bien material", "Solo un servicio", "Un bien material o un servicio", "Exclusivamente lo que se vende en tiendas físicas"], correct: 2 },
-        { text: "La función de 'gestionar las relaciones con los clientes' mediante bases de datos es propia de:", choices: ["Marketing Mix", "CRM", "Benchmarking", "Neuromarketing"], correct: 1 },
-        { text: "Un deseo es la manifestación de una necesidad influenciada principalmente por factores:", choices: ["Económicos y legales", "Fisiológicos y biológicos", "Culturales y personales", "Técnicos y operativos"], correct: 2 },
-        { text: "¿Qué concepto se refiere al acto de obtener un objeto deseado ofreciendo algo a cambio?", choices: ["Transacción", "Segmentación", "Intercambio", "Utilidad"], correct: 2 },
-        { text: "La parte de la demanda que está dispuesta a adquirir un producto específico con un poder adquisitivo determinado se denomina:", choices: ["Deseo latente", "Necesidad absoluta", "Demanda del mercado", "Mercado potencial"], correct: 2 },
-
-        // Q16-Q25: Necesidad y Consumidor / Maslow
-        { text: "¿Qué nivel de la Pirámide de Maslow incluye la necesidad de reconocimiento, estatus y prestigio?", choices: ["Necesidades Sociales", "Necesidades Fisiológicas", "Necesidad de Estima", "Necesidad de Seguridad"], correct: 2 },
-        { text: "¿En qué nivel de la Pirámide de Maslow se sitúa la necesidad de alimentación, descanso y vivienda?", choices: ["Necesidades Sociales", "Necesidades Fisiológicas", "Necesidad de Autorrealización", "Necesidad de Seguridad"], correct: 1 },
-        { text: "La necesidad de amistad, afecto y pertenencia se clasifica como:", choices: ["Necesidades de Seguridad", "Necesidades Sociales", "Necesidad de Estima", "Necesidades Fisiológicas"], correct: 1 },
-        { text: "¿Cuál es el nivel más alto en la jerarquía de Maslow?", choices: ["Necesidad de Estima", "Necesidades Sociales", "Necesidad de Seguridad", "Necesidad de Autorrealización"], correct: 3 },
-        { text: "La seguridad física, de empleo y de recursos se encuentra en el nivel de:", choices: ["Necesidades Fisiológicas", "Necesidades de Seguridad", "Necesidades Sociales", "Necesidad de Estima"], correct: 1 },
-        { text: "La Pirámide de Maslow postula que una necesidad solo se convierte en motivadora cuando:", choices: ["Es promovida por el marketing", "Se ha satisfecho la necesidad del nivel inferior", "La empresa lanza un producto nuevo", "Se trata de un bien de lujo"], correct: 1 },
-        { text: "¿Cómo se define una necesidad desde la perspectiva de marketing?", choices: ["Un problema social no resuelto", "Una oportunidad de negocio", "Un estado de carencia percibida", "El resultado de una campaña publicitaria"], correct: 2 },
-        { text: "Según la perspectiva de los documentos, ¿el marketing se encarga de crear necesidades?", choices: ["Sí, es su principal función", "No, solo orienta los deseos", "Solo en el Marketing 3.0", "Depende del producto"], correct: 1 }, // El texto dice: "La necesidad no la inventa el marketing..."
-        { text: "¿Qué busca el consumidor en la satisfacción de una necesidad, más allá del producto en sí?", choices: ["El menor precio posible", "El valor que el producto le aporta", "La máxima durabilidad", "La exclusividad"], correct: 1 },
-        { text: "Cuando un turista elige un hotel de lujo para sentirse importante, ¿qué necesidad de Maslow busca satisfacer principalmente?", choices: ["Fisiológica", "Seguridad", "Social", "Estima"], correct: 3 },
-
-        // Q26-Q35: Marketing de Servicios - Características
-        { text: "La característica de los servicios que se refiere a que la producción y el consumo suelen ser simultáneos es:", choices: ["Intangibilidad", "Caducidad", "Heterogeneidad", "Inseparabilidad"], correct: 3 },
-        { text: "¿Qué característica implica que los servicios no se pueden ver, probar, oler ni tocar antes de la compra?", choices: ["Intangibilidad", "Caducidad", "Inseparabilidad", "Heterogeneidad"], correct: 0 },
-        { text: "La característica que establece que cada prestación de servicio puede diferir según quién la ofrece, cuándo y dónde, es:", choices: ["Inseparabilidad", "Heterogeneidad o Variabilidad", "Caducidad", "Intangibilidad"], correct: 1 },
-        { text: "¿Cuál de las siguientes características hace que una habitación de hotel vacía o un asiento de avión sin vender representen oportunidades perdidas?", choices: ["Inseparabilidad", "Heterogeneidad", "Intangibilidad", "Caducidad"], correct: 3 },
-        { text: "Un servicio que no se puede almacenar ni inventariar padece de:", choices: ["Inseparabilidad", "Heterogeneidad", "Caducidad", "Intangibilidad"], correct: 2 },
-        { text: "La necesidad de estandarizar los servicios es una respuesta directa a la característica de:", choices: ["Caducidad", "Inseparabilidad", "Heterogeneidad o Variabilidad", "Intangibilidad"], correct: 2 },
-        { text: "¿Cuál es la implicación principal de la Intangibilidad en la decisión de compra del cliente?", choices: ["La dificultad de segmentar el mercado", "El riesgo percibido por el cliente es mayor", "La imposibilidad de fijar precios", "La necesidad de mayor inventario"], correct: 1 },
-        { text: "La Inseparabilidad requiere que el personal de contacto esté presente en el momento de:", choices: ["La planificación estratégica", "La producción del servicio", "La investigación de mercados", "El diseño de la campaña publicitaria"], correct: 1 },
-        { text: "Para paliar la Caducidad, las empresas turísticas deben centrarse en:", choices: ["Aumentar la calidad percibida", "Gestionar la demanda y planificación", "Reducir el personal de contacto", "Incrementar los costes fijos"], correct: 1 },
-        { text: "Un folleto, fotografías o un recorrido virtual son ejemplos de estrategias para paliar la:", choices: ["Caducidad", "Inseparabilidad", "Heterogeneidad", "Intangibilidad"], correct: 3 },
-
-        // Q36-Q50: Estrategias del Marketing de Servicios
-        { text: "¿Cuál es una estrategia para paliar la Intangibilidad?", choices: ["Variabilizar los costes", "Crear una fuerte imagen de marca corporativa", "Personalizar el servicio", "Aplicar el concepto de ergonomía"], correct: 1 },
-        { text: "La estrategia de 'Tangibilizar el servicio' se logra mediante:", choices: ["El uso de publicidad masiva", "Bienes tangibles como folletos o mobiliario", "La reducción de costes variables", "La subcontratación de procesos"], correct: 1 },
-        { text: "Ante la Inseparabilidad y Variabilidad, una estrategia clave para asegurar la calidad es:", choices: ["Fijar precios altos", "Formar al personal", "Reducir los puntos de contacto", "Eliminar el soporte físico"], correct: 1 },
-        { text: "La aplicación del concepto global de Ergonomía es una estrategia sugerida ante la:", choices: ["Caducidad", "Inseparabilidad y Variabilidad", "Intangibilidad", "Baja demanda"], correct: 1 },
-        { text: "¿Qué significa 'Estandarizar los servicios'?", choices: ["Bajar los precios", "Ofrecer una calidad y proceso consistentes", "Personalizar la oferta", "Aumentar la heterogeneidad"], correct: 1 },
-        { text: "La Personalización y singularización del servicio es una estrategia para gestionar:", choices: ["La Caducidad", "La Intangibilidad", "La Heterogeneidad o Variabilidad", "La Inseparabilidad"], correct: 2 },
-        { text: "La Desestacionalización es una estrategia diseñada para enfrentar la:", choices: ["Intangibilidad", "Inseparabilidad", "Caducidad", "Variabilidad"], correct: 2 },
-        { text: "¿Qué estrategia consiste en fijar el precio en función del valor percibido por el cliente?", choices: ["Fijación de precios por costes", "Estrategia contra la Intangibilidad", "Fijación de precios por competencia", "Desestacionalización"], correct: 1 },
-        { text: "La Venta Cruzada (cross-selling) y el Upselling son estrategias para:", choices: ["Reducir la Caducidad", "Aumentar la Caducidad", "Gestionar la Variabilidad y aumentar el valor de la transacción", "Disminuir la Intangibilidad"], correct: 2 },
-        { text: "¿Cuál es el objetivo principal de Desestacionalizar la demanda?", choices: ["Aumentar los costes fijos", "Repartir la demanda a lo largo del año", "Concentrar la oferta en temporada alta", "Promocionar solo el producto principal"], correct: 1 },
-        { text: "El Marketing Relacional es una estrategia enfocada en la:", choices: ["Venta a corto plazo", "Retención y vínculo a largo plazo con el cliente", "Publicidad masiva", "Distribución intensiva"], correct: 1 },
-        { text: "¿Qué tipo de estrategia es emplear Sellos de Calidad de reconocido prestigio?", choices: ["Estrategia contra la Caducidad", "Estrategia contra la Intangibilidad", "Estrategia de segmentación", "Estrategia de diferenciación de precios"], correct: 1 },
-        { text: "El concepto de Caducidad implica que es crucial Variabilizar los costes, es decir:", choices: ["Aumentar los costes fijos", "Convertir costes fijos en costes variables", "Depender más de los costes de producción", "Fijar un precio uniforme"], correct: 1 },
-        { text: "La Formación al personal busca principalmente reducir la:", choices: ["Caducidad", "Variabilidad en la prestación del servicio", "Intangibilidad percibida", "Demanda total del mercado"], correct: 1 },
-        { text: "Si un hotel ofrece un recorrido virtual de sus instalaciones, está aplicando una estrategia contra la:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Variabilidad"], correct: 2 },
-
-        // ----------------------------------------------------
-        // TEMA 2: LA SERVUCCIÓN
-        // ----------------------------------------------------
-        // Q51-Q60: Concepto y Elementos de la Servucción
-        { text: "El neologismo 'Servucción' se forma por la suma de:", choices: ["Servicio + Atención", "Servicio + Producción", "Servicio + Calidad", "Servicio + Venta"], correct: 1 },
-        { text: "¿Qué es la Servucción?", choices: ["La gestión de inventario de servicios", "La organización sistemática de elementos físicos y humanos para la prestación de un servicio", "El proceso de postventa de un producto", "La estrategia de precios de servicios"], correct: 1 },
-        { text: "¿Cuál es el papel del Cliente en el proceso de Servucción?", choices: ["Es un observador pasivo", "Es un elemento de control", "Es un elemento indispensable y participante activo", "Es irrelevante si el servicio es automatizado"], correct: 2 },
-        { text: "El soporte físico en la Servucción incluye:", choices: ["Solo los folletos informativos", "El entorno donde se realiza el servicio y los instrumentos necesarios", "El personal de contacto y su formación", "El sistema de organización interna"], correct: 1 },
-        { text: "¿Cómo se denomina al personal que está en contacto directo con el cliente?", choices: ["Staff de soporte", "Personal de logística", "Personal de contacto", "Recursos humanos"], correct: 2 },
-        { text: "El resultado intangible del sistema de servucción, cuya característica comercial ha sido predeterminada, es el:", choices: ["Sistema de organización interna", "Soporte físico", "Servicio", "Personal de contacto"], correct: 2 },
-        { text: "Los procesos internos y la organización de la empresa que no son visibles para el cliente forman el:", choices: ["Personal de contacto", "Soporte físico", "Sistema de Organización Interna", "El servicio final"], correct: 2 },
-        { text: "¿Qué elemento de la Servucción funciona como interfaz entre el cliente y el sistema de organización interna?", choices: ["El servicio", "El Soporte Físico", "El Personal de Contacto", "El manual de procedimientos"], correct: 2 },
-        { text: "¿Cuál de los siguientes elementos de la Servucción es el único que no es visible para el cliente?", choices: ["El Soporte Físico", "El Servicio", "El Personal de Contacto", "El Sistema de Organización Interna"], correct: 3 },
-        { text: "En el sector turístico, ¿qué elemento de la Servucción suele ser un componente importante de la experiencia por su peso en el ambiente?", choices: ["Sistema de Organización Interna", "Personal de Contacto", "Soporte Físico (el entorno)", "El manual de bienvenida"], correct: 2 },
-
-        // Q61-Q70: Tipos de Servucción
-        { text: "Una Servucción sin Soporte Físico ni Personal de Contacto se denomina:", choices: ["Servucción automatizada", "Servucción Artesanal", "Servucción Pura, sin contacto", "Servucción Mixta"], correct: 2 },
-        { text: "El tipo de Servucción que es característico de actividades donde el cliente interactúa con la máquina (con soporte físico y sin personal de contacto) es:", choices: ["Servucción Artesanal", "Servucción automatizada", "Servucción Pura", "Servucción de alta implicación"], correct: 1 },
-        { text: "Un servicio de consulta médica presencial es un ejemplo de Servucción:", choices: ["Automatizada", "Pura, sin contacto", "Artesanal (con soporte físico y con personal de contacto)", "Digital"], correct: 2 },
-        { text: "Un servicio de consultoría telefónica, sin un entorno físico relevante para la prestación, es un ejemplo de Servucción:", choices: ["Artesanal", "Con soporte físico relevante", "Con personal de contacto, sin soporte físico", "Automatizada"], correct: 2 },
-        { text: "¿Cuál es el tipo de Servucción más habitual en el sector turístico (hoteles, restaurantes, tours)?", choices: ["Servucción Pura", "Servucción Digital", "Servucción Artesanal", "Servucción Automatizada"], correct: 2 },
-        { text: "¿Cuál de los tipos de Servucción presenta el mayor desafío para la estandarización debido a la alta interacción humana?", choices: ["Servucción Pura", "Servucción Artesanal", "Servucción Automatizada", "Servucción con mínimo contacto"], correct: 1 },
-        { text: "¿En qué tipo de Servucción la calidad del servicio depende casi exclusivamente de la eficacia del soporte físico y el sistema de organización interna?", choices: ["Servucción Artesanal", "Servucción Automatizada", "Servucción Pura", "Servucción de alto valor"], correct: 1 },
-        { text: "Un cajero automático es un claro ejemplo de:", choices: ["Servucción Artesanal", "Servucción Automatizada", "Servucción con mínimo contacto", "Servucción de alto contacto"], correct: 1 },
-        { text: "La Servucción sin contacto con personal, pero con soporte físico, busca un alto nivel de:", choices: ["Personalización", "Eficiencia y estandarización", "Lujo", "Vínculo emocional"], correct: 1 },
-        { text: "En el sector turístico, la participación activa del cliente en el proceso de Servucción es generalmente:", choices: ["Mínima", "Media", "Baja", "Elevada"], correct: 3 },
-
-        // Q71-Q80: Gestión del Personal de Contacto
-        { text: "¿Cuál es uno de los objetivos principales del personal de contacto?", choices: ["Definir el presupuesto anual", "Servir al cliente", "Diseñar nuevos productos", "Gestionar la contabilidad"], correct: 1 },
-        { text: "El personal de contacto debe defender los intereses de la empresa a través de dos vías: intereses económicos y:", choices: ["La defensa del marketing mix", "La promoción activa", "Hacer respetar las reglas y procedimientos de la empresa", "La gestión de la cadena de suministro"], correct: 2 },
-        { text: "¿Qué función del personal de contacto responde a la pregunta '¿Qué hacer?' o la realización de los procesos?", choices: ["La función relacional", "La función de defensa", "La función operacional", "La función de soporte"], correct: 2 },
-        { text: "La función relacional del personal de contacto se centra en:", choices: ["La logística del servicio", "El modo o la manera ('¿Cómo?') de interaccionar con el cliente", "La parte más técnica del proceso", "El control de costes"], correct: 1 },
-        { text: "Lo visible, lo gestual y lo verbal en la interacción con el cliente forman parte de la función:", choices: ["Operacional", "Transaccional", "Relacional", "Estructural"], correct: 2 },
-        { text: "¿Cuál de los siguientes es un pilar fundamental para la correcta gestión del personal de contacto?", choices: ["Reducción de salarios", "Formar al personal", "Disminución de la estandarización", "Ignorar las quejas"], correct: 1 },
-        { text: "¿Qué pilar para la gestión del personal busca definir un estilo de empresa y de servicio?", choices: ["Control del personal", "Conceptualizar servucciones facilitadoras", "Reconocimiento del desempeño", "Gestión de incidencias"], correct: 1 },
-        { text: "El 'Reconocimiento del desempeño del personal de contacto' es un pilar fundamental para:", choices: ["Disminuir la Variabilidad", "La motivación y la mejora de la calidad", "Reducir la Caducidad", "Aumentar la Intangibilidad"], correct: 1 },
-        { text: "El personal de contacto es crucial porque es el único elemento visible de la Servucción que también forma parte del:", choices: ["Consumidor final", "Sistema de Organización Interna", "Competidor", "Soporte físico"], correct: 1 },
-        { text: "La actitud y comportamiento moral poco responsable y poco atento al valor de las normas se define como:", choices: ["Operacional", "Relacional", "Laxo/laxista", "Estandarizado"], correct: 2 },
-
-        // Q81-Q90: Gestión del Soporte Físico y Diseño de Servucción
-        { text: "La Gestión del Soporte Físico se divide en:", choices: ["Gestión de costes y Gestión de ingresos", "Gestión del personal y Gestión de procesos", "Gestión del espacio y Gestión del tiempo", "Gestión de la demanda y Gestión de la oferta"], correct: 2 },
-        { text: "¿Qué incluye la Gestión del Espacio como parte del Soporte Físico?", choices: ["Solo la decoración", "La disposición y el diseño del entorno", "La duración del servicio", "La formación del personal"], correct: 1 },
-        { text: "¿Qué incluye la Gestión del Tiempo en la Servucción?", choices: ["La antigüedad de la empresa", "La sincronización y la duración de la prestación", "El diseño arquitectónico", "La fijación de precios"], correct: 1 },
-        { text: "En el Diseño de la Servucción de una actividad turística, ¿cuál es la primera fase a considerar?", choices: ["Soporte físico", "Función del personal de contacto", "Participación del cliente (actos intelectuales, verbales, físicos)", "Sistema interno"], correct: 2 },
-        { text: "En el diseño de servucción, el Soporte Físico debe seguir la cronología desde la perspectiva de:", choices: ["La competencia", "Los proveedores", "El cliente", "Los accionistas"], correct: 2 },
-        { text: "La función del Personal de Contacto en el diseño de servucción debe indicar el comportamiento que va a permitir:", choices: ["Aumentar la burocracia", "Resolver positivamente la acción del cliente", "Minimizar la interacción", "Reducir los salarios"], correct: 1 },
-        { text: "La Calidad en Servucción se define como:", choices: ["Máximo beneficio para la empresa", "Satisfacción de las necesidades y expectativas del cliente", "Bajo coste de producción", "Alta estandarización de procesos"], correct: 1 },
-        { text: "En el sector hotelero, la temperatura ambiental y la comodidad del mobiliario son elementos de:", choices: ["Sistema Interno", "Personal de contacto", "Soporte Físico", "Servicio"], correct: 2 },
-        { text: "El proceso de preparación de alimentos en un restaurante (cocina) que el cliente no ve es parte de:", choices: ["Soporte Físico", "Personal de Contacto", "Sistema de Organización Interna", "Marketing Mix"], correct: 2 },
-        { text: "¿Qué se entiende por 'Operacional' en el glosario de Servucción?", choices: ["Aspectos de interacción humana", "Aspectos relacionados con los procesos o parte de ellos", "Aspectos de calidad percibida", "Aspectos de la promoción"], correct: 1 },
-
-        // Q91-Q100: Repaso y Aplicación Mixta
-        { text: "¿Qué característica del servicio obliga a aplicar el concepto global de ergonomía?", choices: ["Intangibilidad", "Inseparabilidad y Variabilidad", "Caducidad", "Demanda alta"], correct: 1 },
-        { text: "El objetivo de la Venta Cruzada (cross-selling) es:", choices: ["Reemplazar el producto principal", "Ofrecer un servicio complementario al adquirido", "Vender una versión más cara del mismo producto", "Reducir la demanda"], correct: 1 },
-        { text: "¿A qué se refiere el concepto de 'Relacional' en el personal de contacto?", choices: ["Interacción entre consumidor y profesional", "Manejo de equipos", "Control de inventario", "Definición de precios"], correct: 0 },
-        { text: "La necesidad de un cliente de pernoctar en un lugar durante un viaje se clasifica como necesidad:", choices: ["Social", "Estima", "Fisiológica / Seguridad", "Autorrealización"], correct: 2 },
-        { text: "El uso de Sellos de Calidad y el Marketing Relacional son estrategias que combaten principalmente la:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Variabilidad"], correct: 2 },
-        { text: "¿Cuál de los siguientes es un ejemplo de estrategia para desestacionalizar?", choices: ["Aumentar el precio en temporada alta", "Cerrar en temporada baja", "Ofrecer tarifas muy reducidas en temporada baja", "Reducir el personal en verano"], correct: 2 },
-        { text: "En el modelo de Servucción, la máquina o tecnología (ej. quiosco de check-in) con la que interactúa el cliente se considera:", choices: ["Personal de Contacto", "Sistema de Organización Interna", "Soporte Físico", "Servicio"], correct: 2 },
-        { text: "El uso de testimonios y referencias de otros clientes es una forma de paliar la:", choices: ["Caducidad", "Heterogeneidad", "Inseparabilidad", "Intangibilidad"], correct: 3 },
-        { text: "Un tour guiado que cambia ligeramente la ruta según el estado de ánimo del guía ese día muestra la característica de:", choices: ["Caducidad", "Inseparabilidad", "Intangibilidad", "Heterogeneidad o Variabilidad"], correct: 3 },
-        { text: "En el diseño de Servucción, ¿qué tipo de actos incluye la Participación del Cliente?", choices: ["Solo actos físicos (ej. tomar un objeto)", "Solo actos de espera", "Actos intelectuales, verbales, físicos o de espera", "Actos del personal de contacto"], correct: 2 }
-    ];
-    // --- Fin de la Definición del Array de 100 Preguntas ---
-
-
-    // --- Lógica del Cuestionario ---
-
-    /**
-     * Muestra un modal de mensaje.
-     * @param {string} title Título del modal.
-     * @param {string} body Cuerpo del mensaje.
-     * @param {string} color Título para el título (e.g., 'text-red-500').
-     */
-    function showModal(title, body, color = 'text-indigo-600') {
-        document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-title').className = `text-xl font-semibold mb-3 ${color}`;
-        document.getElementById('modal-body').textContent = body;
-        document.getElementById('modal-message').classList.remove('hidden');
-        document.getElementById('modal-message').classList.add('flex');
-    }
-
-    /**
-     * Selecciona el modo de estudio/práctica y actualiza la UI.
-     * @param {string} mode 'study' o 'practice'.
-     */
-    function selectMode(mode) {
-        currentMode = mode;
-        const studyBtn = document.getElementById('btn-study');
-        const practiceBtn = document.getElementById('btn-practice');
-        const startBtn = document.getElementById('start-button');
-
-        studyBtn.classList.remove('ring-4', 'ring-blue-500');
-        practiceBtn.classList.remove('ring-4', 'ring-green-500');
-
-        if (mode === 'study') {
-            studyBtn.classList.add('ring-4', 'ring-blue-500');
-        } else if (mode === 'practice') {
-            practiceBtn.classList.add('ring-4', 'ring-green-500');
-        }
-        startBtn.disabled = false;
-    }
-
-    /**
-     * Inicia el cuestionario.
-     */
-    function startQuiz() {
-        if (!currentMode) {
-            showModal('Atención', 'Por favor, selecciona un modo antes de comenzar.', 'text-red-600');
-            return;
+            return array;
         }
 
-        quizStarted = true;
-        document.getElementById('mode-selection').classList.add('hidden');
-        document.getElementById('quiz-container').classList.remove('hidden');
-        
-        // Configurar la visualización del modo
-        const modeDisplay = document.getElementById('mode-display');
-        modeDisplay.textContent = currentMode === 'study' ? 'Modo Estudiar' : 'Modo Práctica';
-        modeDisplay.className = `text-sm font-semibold px-3 py-1 rounded-full text-white ${currentMode === 'study' ? 'bg-blue-500' : 'bg-green-500'}`;
-        
-        loadQuestion(0);
-        document.getElementById('max-questions').textContent = MAX_QUESTIONS;
-    }
 
-    /**
-     * Carga y muestra una pregunta en la UI.
-     * @param {number} index Índice de la pregunta a cargar.
-     */
-    function loadQuestion(index) {
-        if (index < 0 || index >= MAX_QUESTIONS) return;
+        // --- FUNCIONES DE LÓGICA DEL TEST ---
 
-        currentQuestionIndex = index;
-        const q = questions[index];
-        const choicesContainer = document.getElementById('choices-container');
-        choicesContainer.innerHTML = ''; // Limpiar opciones anteriores
-        document.getElementById('question-number').textContent = index + 1;
-        document.getElementById('question-text').textContent = q.text;
-        document.getElementById('feedback-message').classList.add('hidden');
-
-        q.choices.forEach((choice, i) => {
-            const btn = document.createElement('button');
-            btn.textContent = choice;
-            btn.className = `choice-button w-full text-left p-4 rounded-xl border-2 border-gray-200 bg-white text-gray-800 hover:bg-gray-100 transition duration-150 shadow-sm`;
-            btn.onclick = () => selectAnswer(i);
-            btn.setAttribute('data-index', i);
-            choicesContainer.appendChild(btn);
-        });
-
-        updateNavigationButtons();
-        
-        // Si ya se respondió, aplicar estilos y deshabilitar
-        if (userAnswers[index] !== null) {
-            applyAnswerStyles(index);
+        function selectRandomQuestions() {
+            // 1. Crear una copia del array de preguntas para no modificar el original
+            let questionsCopy = [...allQuestions];
+            
+            // 2. Aplicar la mezcla robusta (shuffle)
+            const shuffled = shuffleArray(questionsCopy);
+            
+            // 3. Seleccionar los primeros 10 elementos
+            selectedQuestions = shuffled.slice(0, questionsPerTest);
+            
+            userAnswers = new Array(questionsPerTest).fill(null);
+            quizChecked = false;
         }
-    }
 
-    /**
-     * Procesa la selección de respuesta del usuario.
-     * @param {number} selectedIndex Índice de la opción seleccionada.
-     */
-    function selectAnswer(selectedIndex) {
-        const q = questions[currentQuestionIndex];
-        userAnswers[currentQuestionIndex] = selectedIndex;
+        function saveAnswer(questionIndex, answerIndex) {
+            userAnswers[questionIndex] = answerIndex;
+            updateQuestionStatus();
+            
+            // Lógica para el modo "Estudiar" (revisión instantánea)
+            if (quizMode === 'study' && !quizChecked) {
+                // Forzar la revisión para esta pregunta
+                const qData = selectedQuestions[questionIndex];
+                const card = document.getElementById(`q-${questionIndex}`);
+                
+                // Aplicar el feedback inmediatamente
+                applyFeedbackStylesToOptions(questionIndex, qData);
+                displayRationaleAndFeedback(card, questionIndex, qData);
+                
+                // Deshabilitar la tarjeta para que no pueda cambiar la respuesta
+                card.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
+                
+                // Recalcular y mostrar el resultado parcial (solo el número de correctas instantáneas)
+                const { score } = calculateResults(true); 
+                scoreDisplay.innerHTML = `Puntuación actual: <span class="text-green-600 font-bold">${score}</span> / ${questionsPerTest} (en modo Estudiar)`;
+                resultsContainer.classList.remove('hidden');
+            }
+        }
 
-        if (currentMode === 'study') {
-            // Modo Estudiar: Corrección inmediata
-            applyAnswerStyles(currentQuestionIndex, true);
-        } else if (currentMode === 'practice') {
-            // Modo Práctica: Solo marcar la selección, corrección al final
-            applyAnswerStyles(currentQuestionIndex, false);
-            // Marcar solo el botón seleccionado
-            const buttons = document.getElementById('choices-container').querySelectorAll('.choice-button');
-            buttons.forEach((btn, i) => {
-                btn.classList.remove('bg-indigo-200', 'ring-2', 'ring-indigo-500');
-                if (i === selectedIndex) {
-                    btn.classList.add('bg-indigo-200', 'ring-2', 'ring-indigo-500');
+        function calculateResults(instantCheck = false) {
+            let score = 0;
+            let totalAnswered = 0;
+            selectedQuestions.forEach((qData, index) => {
+                const isAnswered = userAnswers[index] !== null;
+                if (isAnswered) {
+                    totalAnswered++;
+                    // Si es instantCheck, solo cuenta si ya está revisada (en modo study)
+                    // Si no es instantCheck (modo practice o comprobación final), cuenta si es correcta
+                    if (userAnswers[index] === qData.a) {
+                        if (instantCheck) {
+                            // En modo Estudiar, solo cuenta si la tarjeta ya tiene feedback
+                            const card = document.getElementById(`q-${index}`);
+                            if (card && card.classList.contains('correct-answer-card')) {
+                                score++;
+                            }
+                        } else {
+                            score++;
+                        }
+                    }
                 }
             });
+            return { score, totalAnswered };
         }
         
-        updateNavigationButtons();
+        // --- FUNCIONES DE RENDERIZADO Y UI ---
 
-        // Deshabilitar todos los botones para evitar doble respuesta
-        document.getElementById('choices-container').querySelectorAll('.choice-button').forEach(btn => {
-            btn.disabled = true;
-            btn.classList.add('disabled', 'cursor-not-allowed');
-        });
-    }
+        function renderQuestions() {
+            if (!quizContainer) return; 
 
-    /**
-     * Aplica los estilos visuales a los botones de respuesta.
-     * @param {number} index Índice de la pregunta.
-     * @param {boolean} showCorrection Si se debe mostrar la corrección (solo en Modo Estudiar).
-     */
-    function applyAnswerStyles(index, showCorrection = false) {
-        const q = questions[index];
-        const selectedIndex = userAnswers[index];
-        const buttons = document.getElementById('choices-container').querySelectorAll('.choice-button');
-        const feedback = document.getElementById('feedback-message');
-        
-        feedback.classList.add('hidden');
-        feedback.classList.remove('bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            quizContainer.innerHTML = '';
+            const isStudyMode = quizMode === 'study';
 
-        buttons.forEach((btn, i) => {
-            btn.classList.remove('bg-indigo-200', 'ring-2', 'ring-indigo-500', 'correct-answer', 'incorrect-answer', 'border-red-500', 'border-green-500', 'border-gray-200');
-            btn.classList.add('border-gray-200', 'bg-white');
+            // Si está en modo Estudiar, se considera "comprobado" por pregunta
+            // Si está en modo Práctica, solo está "comprobado" si se pulsó el botón final
+            const disableAllInteraction = quizChecked && quizMode === 'practice'; 
 
-            if (i === selectedIndex) {
-                if (showCorrection) {
-                    if (selectedIndex === q.correct) {
-                        btn.classList.add('correct-answer', 'border-green-500');
-                        feedback.textContent = '¡Correcto!';
-                        feedback.classList.remove('hidden');
-                        feedback.classList.add('bg-green-100', 'text-green-700');
-                    } else {
-                        btn.classList.add('incorrect-answer', 'border-red-500');
-                        feedback.textContent = `Incorrecto. La respuesta correcta es: ${q.choices[q.correct]}`;
-                        feedback.classList.remove('hidden');
-                        feedback.classList.add('bg-red-100', 'text-red-700');
+            selectedQuestions.forEach((qData, index) => {
+                const questionNumber = index + 1;
+
+                const card = document.createElement('div');
+                card.className = 'question-card bg-white p-6 rounded-xl mb-6 transition-all duration-300';
+                card.id = `q-${index}`;
+                
+                // Comprobar si la pregunta ya fue revisada individualmente (solo en modo estudiar)
+                const isQuestionChecked = isStudyMode && userAnswers[index] !== null;
+
+                // Título de la pregunta
+                const qTitle = document.createElement('p');
+                qTitle.className = 'text-lg font-semibold mb-4 text-gray-800';
+                qTitle.innerHTML = `${questionNumber}. ${qData.q}`;
+                card.appendChild(qTitle);
+
+                // Contenedor de opciones
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'space-y-3';
+
+                qData.o.forEach((optionText, optionIndex) => {
+                    const optionId = `q${index}-o${optionIndex}`;
+                    const inputDisabled = disableAllInteraction || isQuestionChecked;
+
+                    // Radio Button
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = `question-${index}`;
+                    input.id = optionId;
+                    input.value = optionIndex;
+                    input.className = 'hidden';
+                    input.disabled = inputDisabled; 
+                    
+                    if (!inputDisabled) {
+                        // Listener para guardar la respuesta
+                        input.addEventListener('change', (e) => saveAnswer(index, parseInt(e.target.value)));
                     }
-                } else {
-                    // Modo Práctica: Solo marcar la selección
-                    btn.classList.add('bg-indigo-200', 'ring-2', 'ring-indigo-500');
+                    
+                    if (userAnswers[index] === optionIndex) {
+                        input.checked = true;
+                    }
+
+                    // Etiqueta (Label) que actúa como botón de opción
+                    const label = document.createElement('label');
+                    label.htmlFor = optionId;
+                    label.className = `option-label block p-3 border border-gray-200 rounded-lg cursor-pointer transition duration-200 ease-in-out text-gray-700 
+                                       ${!inputDisabled ? 'hover:bg-gray-100' : 'pointer-events-none opacity-90'}`;
+                    label.innerHTML = optionText; 
+
+                    // Estilo de seleccionado en modo Práctica antes de Check
+                    if (userAnswers[index] === optionIndex && !disableAllInteraction) {
+                        label.classList.add('bg-gray-200');
+                    }
+                    
+                    // Aplicar estilos de feedback si ya se corrigió (Modo Práctica final o Modo Estudiar individual)
+                    if (disableAllInteraction || isQuestionChecked) {
+                        applyFeedbackStyles(label, optionIndex, qData, index);
+                    }
+
+                    optionsDiv.appendChild(input);
+                    optionsDiv.appendChild(label);
+                });
+                
+                card.appendChild(optionsDiv);
+                
+                // Mostrar Racional y Feedback si ya se ha comprobado
+                if (disableAllInteraction || isQuestionChecked) {
+                    displayRationaleAndFeedback(card, index, qData);
                 }
-            } else if (showCorrection && i === q.correct) {
-                 // Modo Estudiar: Mostrar la correcta
-                btn.classList.add('correct-answer', 'border-green-500');
+
+                quizContainer.appendChild(card);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function applyFeedbackStyles(label, optionIndex, qData, questionIndex) {
+            // Marcar la opción correcta
+            if (optionIndex === qData.a) {
+                label.classList.remove('bg-gray-200');
+                label.classList.add('bg-green-200', 'font-bold', 'border-green-600');
+            } 
+            
+            // Marcar la opción incorrecta seleccionada por el usuario
+            if (optionIndex === userAnswers[questionIndex] && optionIndex !== qData.a) {
+                label.classList.remove('bg-gray-200');
+                label.classList.add('bg-red-200', 'border-red-600');
             }
-
-            // Deshabilitar los botones después de la selección en Modo Estudiar
-            if (showCorrection) {
-                btn.disabled = true;
-                btn.classList.add('disabled', 'cursor-not-allowed');
-            }
-        });
+        }
         
-        // Asegurar que el botón Siguiente/Finalizar esté disponible si ya respondió
-        document.getElementById('next-button').disabled = false;
-    }
+        function applyFeedbackStylesToOptions(questionIndex, qData) {
+            // Aplica los estilos de feedback a las opciones de una pregunta específica
+            const card = document.getElementById(`q-${questionIndex}`);
+            if (card) {
+                const options = card.querySelectorAll('.option-label');
+                options.forEach((label, optionIndex) => {
+                    applyFeedbackStyles(label, optionIndex, qData, questionIndex);
+                });
 
-    /**
-     * Navega a la pregunta siguiente o finaliza el test.
-     */
-    function nextQuestion() {
-        if (currentQuestionIndex < MAX_QUESTIONS - 1) {
-            loadQuestion(currentQuestionIndex + 1);
-        } else {
-            finishTest();
-        }
-    }
-
-    /**
-     * Navega a la pregunta anterior.
-     */
-    function prevQuestion() {
-        if (currentQuestionIndex > 0) {
-            loadQuestion(currentQuestionIndex - 1);
-        }
-    }
-
-    /**
-     * Actualiza el estado de los botones de navegación.
-     */
-    function updateNavigationButtons() {
-        document.getElementById('prev-button').disabled = currentQuestionIndex === 0;
-        
-        const nextButton = document.getElementById('next-button');
-        
-        if (currentQuestionIndex === MAX_QUESTIONS - 1) {
-            nextButton.textContent = 'Finalizar Test';
-        } else {
-            nextButton.textContent = 'Siguiente';
-        }
-
-        // En modo práctica, el botón Siguiente/Finalizar solo se activa si hay respuesta
-        if (currentMode === 'practice') {
-             nextButton.disabled = userAnswers[currentQuestionIndex] === null;
-        } else {
-             // En modo estudiar, puede avanzar si ya respondió o si no ha respondido pero no hay corrección inmediata
-             // Como en Modo Estudiar el botón se activa al seleccionar, aquí solo chequeamos si es la última.
-             nextButton.disabled = false; // Siempre se puede avanzar/finalizar una vez la respuesta está registrada
-        }
-    }
-
-    /**
-     * Calcula los resultados y los muestra.
-     */
-    function calculateAndDisplayResults() {
-        let correctCount = 0;
-        for (let i = 0; i < MAX_QUESTIONS; i++) {
-            if (userAnswers[i] === questions[i].correct) {
-                correctCount++;
+                // Aplicar estilo a la tarjeta (para el borde izquierdo)
+                const isCorrect = userAnswers[questionIndex] === qData.a;
+                card.classList.remove('incorrect-answer-card', 'correct-answer-card');
+                if (isCorrect) {
+                    card.classList.add('correct-answer-card');
+                } else if (userAnswers[questionIndex] !== null) {
+                    card.classList.add('incorrect-answer-card');
+                }
             }
         }
 
-        const percentage = Math.round((correctCount / MAX_QUESTIONS) * 100);
-        
-        document.getElementById('quiz-container').classList.add('hidden');
-        document.getElementById('results-container').classList.remove('hidden');
 
-        const scoreElement = document.getElementById('final-score');
-        const messageElement = document.getElementById('score-message');
+        function displayRationaleAndFeedback(card, index, qData) {
+            const isCorrect = userAnswers[index] !== null && userAnswers[index] === qData.a;
+            
+            // 1. Agregar mensaje de retroalimentación
+            // Evitar duplicar
+            let feedbackMsg = card.querySelector('.feedback-message');
+            if (!feedbackMsg) {
+                feedbackMsg = document.createElement('p');
+                feedbackMsg.className = 'feedback-message mt-4 text-sm font-medium';
+                card.appendChild(feedbackMsg);
+            }
 
-        scoreElement.textContent = `${percentage}%`;
-        messageElement.textContent = `Respuestas correctas: ${correctCount} de ${MAX_QUESTIONS}`;
+            const correctAnswerText = qData.o[qData.a];
 
-        scoreElement.classList.remove('text-red-500', 'text-yellow-500', 'text-green-500', 'text-indigo-600');
-
-        if (percentage < 50) {
-            scoreElement.classList.add('text-red-500');
-            messageElement.textContent += " – Necesitas repasar los conceptos clave.";
-        } else if (percentage < 80) {
-            scoreElement.classList.add('text-yellow-500');
-            messageElement.textContent += " – ¡Bien! Cerca de dominar la materia. Sigue practicando.";
-        } else {
-            scoreElement.classList.add('text-green-500');
-            messageElement.textContent += " – ¡Excelente! Gran dominio de los temas.";
+            feedbackMsg.innerHTML = isCorrect 
+                ? '<span class="correct-feedback text-lg">¡Respuesta Correcta!</span>' 
+                : `Incorrecto. La respuesta correcta era: <span class="correct-feedback">${correctAnswerText}</span>`;
+            
+            // 2. Agregar Racional
+            let rationaleBox = card.querySelector('.rationale-box-content');
+            if (!rationaleBox) {
+                const rationaleWrapper = document.createElement('div');
+                rationaleWrapper.className = 'rationale-box mt-4 p-3 rounded-lg text-sm';
+                rationaleWrapper.innerHTML = `<span class="font-bold">Explicación:</span> <span class="rationale-box-content">${qData.r}</span>`;
+                card.appendChild(rationaleWrapper);
+            }
         }
-    }
 
-    /**
-     * Finaliza el test y muestra los resultados.
-     */
-    function finishTest() {
-        // En ambos modos, la lógica de cálculo y visualización es la misma
-        calculateAndDisplayResults();
-    }
+        function updateQuestionStatus() {
+            if (!statusContainer) return;
+            statusContainer.innerHTML = '';
+            
+            for (let i = 0; i < questionsPerTest; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'w-3 h-3 rounded-full mx-1';
+                
+                // Estado de respuesta
+                const isAnswered = userAnswers[i] !== null;
+                const isCorrect = isAnswered && userAnswers[i] === selectedQuestions[i].a;
 
-    /**
-     * Reinicia la aplicación a la pantalla de selección de modo.
-     */
-    function resetTest() {
-        currentMode = null;
-        currentQuestionIndex = 0;
-        userAnswers = new Array(MAX_QUESTIONS).fill(null);
-        quizStarted = false;
+                if (quizChecked) {
+                    // Modo Práctica: Resultados finales
+                    dot.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500');
+                } else if (quizMode === 'study' && isAnswered) {
+                    // Modo Estudiar: Feedback instantáneo
+                    dot.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500');
+                } else if (isAnswered) {
+                    // Modo Práctica: Solo respondida (antes de comprobar)
+                    dot.classList.add('bg-blue-500');
+                } else {
+                    // Sin responder
+                    dot.classList.add('bg-gray-400');
+                }
+                
+                statusContainer.appendChild(dot);
+            }
+        }
 
-        document.getElementById('mode-selection').classList.remove('hidden');
-        document.getElementById('quiz-container').classList.add('hidden');
-        document.getElementById('results-container').classList.add('hidden');
-        document.getElementById('start-button').disabled = true;
+        function switchMode(newMode) {
+            quizMode = newMode;
+            // Ocultar resultados y reiniciar el test para aplicar el nuevo modo
+            resultsContainer.classList.add('hidden');
+            startNewTest(); 
+            
+            // Ajustar visibilidad del botón Comprobar
+            if (quizMode === 'practice') {
+                checkButton.classList.remove('hidden');
+                checkButton.textContent = 'Comprobar Bloque';
+                headerTitle.textContent = 'Bloque de 10 Preguntas (Modo PRÁCTICA)';
+            } else {
+                checkButton.classList.add('hidden');
+                headerTitle.textContent = 'Bloque de 10 Preguntas (Modo ESTUDIAR)';
+            }
+            restartButton.classList.add('hidden');
+            
+            // Actualizar selector visualmente
+            const studyBtn = document.getElementById('mode-study');
+            const practiceBtn = document.getElementById('mode-practice');
+            
+            studyBtn.classList.remove('bg-blue-600', 'text-white', 'bg-gray-200', 'text-gray-700');
+            practiceBtn.classList.remove('bg-blue-600', 'text-white', 'bg-gray-200', 'text-gray-700');
 
-        // Limpiar estilos de los botones de modo
-        document.getElementById('btn-study').classList.remove('ring-4', 'ring-blue-500');
-        document.getElementById('btn-practice').classList.remove('ring-4', 'ring-green-500');
-    }
+            if (newMode === 'study') {
+                studyBtn.classList.add('bg-blue-600', 'text-white');
+                practiceBtn.classList.add('bg-gray-200', 'text-gray-700');
+            } else {
+                practiceBtn.classList.add('bg-blue-600', 'text-white');
+                studyBtn.classList.add('bg-gray-200', 'text-gray-700');
+            }
+        }
 
-    // Inicializar la aplicación al cargar la página
-    document.addEventListener('DOMContentLoaded', () => {
-        // Inicializa el botón "Siguiente"
-        document.getElementById('next-button').disabled = true;
-    });
+        // --- INICIALIZACIÓN Y EVENTOS ---
+        
+        function initializeDomElements() {
+            quizContainer = document.getElementById('quiz-container');
+            resultsContainer = document.getElementById('results-container');
+            checkButton = document.getElementById('check-button');
+            restartButton = document.getElementById('restart-button');
+            scoreDisplay = document.getElementById('score-display');
+            headerTitle = document.getElementById('header-title');
+            statusContainer = document.getElementById('question-status-container');
+            modeSelector = document.getElementById('mode-selector');
+        }
 
-</script>
+        function attachEventListeners() {
+            // Evento para el botón de Comprobar (Solo visible en modo Práctica)
+            checkButton.addEventListener('click', () => {
+                if (quizChecked || quizMode === 'study') return;
+                
+                quizChecked = true;
+                const { score, totalAnswered } = calculateResults(false);
+                
+                // Mostrar resultados finales
+                scoreDisplay.innerHTML = `
+                    <p class="text-2xl font-bold text-gray-800">Resultado Final (Modo Práctica)</p>
+                    <p class="text-xl mt-2">Puntuación: <span class="text-green-600">${score}</span> / ${questionsPerTest}</p>
+                    <p class="text-sm text-gray-600">Preguntas respondidas: ${totalAnswered}</p>
+                    ${totalAnswered < questionsPerTest ? '<p class="text-red-500 mt-1 text-sm font-semibold">¡Atención! Has dejado preguntas sin responder.</p>' : ''}
+                `;
+                resultsContainer.classList.remove('hidden');
+                checkButton.classList.add('hidden');
+                restartButton.classList.remove('hidden', 'animate-pop');
+                void restartButton.offsetWidth; 
+                restartButton.classList.add('animate-pop');
+
+                renderQuestions(); 
+                updateQuestionStatus(); 
+                headerTitle.textContent = `Resultados del Bloque: ${score}/${questionsPerTest}`;
+            });
+
+            // Evento para el botón de Reiniciar
+            restartButton.addEventListener('click', () => {
+                switchMode(quizMode); // Reinicia con el modo actual
+            });
+            
+            // Eventos para el selector de modo
+            document.getElementById('mode-study').addEventListener('click', () => switchMode('study'));
+            document.getElementById('mode-practice').addEventListener('click', () => switchMode('practice'));
+        }
+        
+        function startNewTest() {
+            selectRandomQuestions();
+            renderQuestions();
+            updateQuestionStatus();
+        }
+
+        window.onload = () => {
+            initializeDomElements();
+            attachEventListeners();
+            
+            // Inicia el primer test por defecto en modo 'practice'
+            switchMode('practice');
+        };
+
+    </script>
+</head>
+<body class="p-4 sm:p-8 bg-gray-50 min-h-screen">
+
+    <div class="max-w-3xl mx-auto">
+        <header class="text-center mb-10 p-6 bg-white rounded-xl shadow-lg">
+            <h1 class="text-4xl font-extrabold text-blue-800" id="header-title">Bloque de 10 Preguntas (Modo PRÁCTICA)</h1>
+            <h2 class="text-xl font-medium text-gray-600 mt-2">Introducción al Turismo (Unidad 1)</h2>
+            
+            <div id="mode-selector" class="flex justify-center mt-5 mb-4 p-1 bg-gray-100 rounded-xl shadow-inner max-w-sm mx-auto">
+                <button id="mode-practice" class="flex-1 px-4 py-2 font-semibold text-lg rounded-xl transition duration-200 bg-blue-600 text-white">
+                    Modo Práctica
+                </button>
+                <button id="mode-study" class="flex-1 px-4 py-2 font-semibold text-lg rounded-xl transition duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                    Modo Estudiar
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-500 mt-1">10 de 100 preguntas totales - ¡Ideal para repasar!</p>
+            
+            <div id="question-status-container" class="flex justify-center mt-4 flex-wrap gap-1 border-t pt-4">
+                </div>
+        </header>
+
+        <div id="results-container" class="hidden text-center p-6 bg-yellow-100 rounded-xl shadow-inner border border-yellow-400 mb-8">
+            <div id="score-display">
+                </div>
+        </div>
+
+        <div id="quiz-container">
+            </div>
+
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-10">
+            <button id="check-button" class="px-8 py-4 bg-green-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105">
+                Comprobar Bloque
+            </button>
+            <button id="restart-button" class="px-8 py-4 bg-red-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105 hidden">
+                Reiniciar y Obtener 10 Nuevas Preguntas
+            </button>
+        </div>
+
+    </div>
 </body>
 </html>
-
